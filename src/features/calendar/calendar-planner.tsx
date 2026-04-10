@@ -3,28 +3,23 @@
 import { ChevronLeft, ChevronRight, Search } from "lucide-react";
 import { useMemo, useState } from "react";
 
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Input } from "@/components/ui/input";
 import { ProjectPill } from "@/components/ui/project-pill";
 import { SectionHeading } from "@/components/ui/section-heading";
-import { Select } from "@/components/ui/select";
 import { eventOccursOn, formatEventRecurrence } from "@/lib/event-utils";
 import { formatDateTime } from "@/lib/utils";
 import { useAppState } from "@/providers/app-state-provider";
-import { useAuth } from "@/providers/auth-provider";
-import type { CalendarView } from "@/types/domain";
+import type { CalendarEvent, CalendarView, Task } from "@/types/domain";
 
 const weekDays = ["seg.", "ter.", "qua.", "qui.", "sex.", "sáb.", "dom."];
 const views: CalendarView[] = ["day", "week", "month", "year"];
 
 function startOfMonth(date: Date) {
   return new Date(date.getFullYear(), date.getMonth(), 1);
-}
-
-function endOfMonth(date: Date) {
-  return new Date(date.getFullYear(), date.getMonth() + 1, 0);
 }
 
 function startOfWeek(date: Date) {
@@ -95,18 +90,41 @@ function taskToneClass(status: "todo" | "in_progress" | "done") {
   return `${tone.bg} ${tone.text} ${tone.border}`;
 }
 
-function eventToneClass() {
+function reminderToneClass() {
   return "border-border/80 bg-bg-panel/74 text-text-soft";
 }
 
+function bucketLabel(date: Date) {
+  const hour = date.getHours();
+  if (hour < 12) return "Manhã";
+  if (hour < 18) return "Tarde";
+  return "Noite";
+}
+
+type DayTimelineItem =
+  | {
+      id: string;
+      kind: "task";
+      title: string;
+      description?: string | null;
+      bucket: "Manhã" | "Tarde" | "Noite";
+      meta: string;
+      status: Task["status"];
+      projectId?: string | null;
+    }
+  | {
+      id: string;
+      kind: "reminder";
+      title: string;
+      description?: string | null;
+      bucket: "Manhã" | "Tarde" | "Noite";
+      meta: string;
+      recurrence: string;
+    };
+
 export function CalendarPlanner() {
-  const { events, tasks, addEvent, searchQuery, projects } = useAppState();
-  const { user } = useAuth();
+  const { events, tasks, searchQuery, projects, openTaskComposer } = useAppState();
   const [view, setView] = useState<CalendarView>("month");
-  const [title, setTitle] = useState("");
-  const [startsAt, setStartsAt] = useState("2026-04-10T10:00");
-  const [endsAt, setEndsAt] = useState("2026-04-10T11:00");
-  const [taskId, setTaskId] = useState("");
   const [cursorDate, setCursorDate] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [calendarSearch, setCalendarSearch] = useState("");
@@ -123,6 +141,18 @@ export function CalendarPlanner() {
       }),
     [events, normalizedSearch]
   );
+  const visibleTasks = useMemo(
+    () =>
+      tasks.filter((task) => {
+        if (!normalizedSearch) return true;
+        return (
+          task.title.toLowerCase().includes(normalizedSearch) ||
+          task.description?.toLowerCase().includes(normalizedSearch) ||
+          task.tags.some((tag) => tag.toLowerCase().includes(normalizedSearch))
+        );
+      }),
+    [normalizedSearch, tasks]
+  );
 
   const weekDates = useMemo(
     () => Array.from({ length: 7 }, (_, index) => addDays(startOfWeek(cursorDate), index)),
@@ -134,15 +164,15 @@ export function CalendarPlanner() {
     [cursorDate]
   );
 
-  const selectedTasks = tasks.filter((task) => task.dueDate && sameDay(new Date(task.dueDate), selectedDate));
-  const selectedEvents = visibleEvents.filter((event) => eventOccursOn(event, selectedDate));
-
   function itemsForDay(day: Date) {
     return {
-      events: visibleEvents.filter((event) => eventOccursOn(event, day)),
-      tasks: tasks.filter((task) => task.dueDate && sameDay(new Date(task.dueDate), day))
+      reminders: visibleEvents.filter((event) => eventOccursOn(event, day)),
+      tasks: visibleTasks.filter((task) => task.dueDate && sameDay(new Date(task.dueDate), day))
     };
   }
+
+  const selectedDayItems = itemsForDay(selectedDate);
+  const selectedTimeline = buildTimeline(selectedDate, selectedDayItems.tasks, selectedDayItems.reminders);
 
   function moveCursor(direction: -1 | 1) {
     setCursorDate((current) => {
@@ -167,7 +197,7 @@ export function CalendarPlanner() {
   return (
     <div className="space-y-6">
       <SectionHeading
-        description="Calendário adaptável por dia, semana, mês ou ano, com resumo lateral de tudo que importa."
+        description="Cada visualização assume um papel diferente: agenda do dia, operação semanal, leitura mensal e mapa anual."
         eyebrow="Módulo"
         title="Calendário"
         action={
@@ -175,7 +205,9 @@ export function CalendarPlanner() {
             {views.map((item) => (
               <button
                 className={`rounded-full px-4 py-2 text-sm transition ${
-                  view === item ? "bg-bg-elevated text-text shadow-sm" : "text-text-soft hover:bg-bg-elevated/50 hover:text-text"
+                  view === item
+                    ? "bg-bg-elevated text-text shadow-sm"
+                    : "text-text-soft hover:bg-bg-elevated/50 hover:text-text"
                 }`}
                 key={item}
                 onClick={() => setView(item)}
@@ -193,6 +225,15 @@ export function CalendarPlanner() {
           <div className="border-b border-border px-6 py-5">
             <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
               <div>
+                <p className="text-sm text-text-soft">
+                  {view === "day"
+                    ? "Agenda detalhada"
+                    : view === "week"
+                      ? "Operação semanal"
+                      : view === "month"
+                        ? "Leitura mensal"
+                        : "Mapa anual"}
+                </p>
                 <h3 className="text-4xl font-semibold tracking-[-0.06em] capitalize">{headerLabel}</h3>
               </div>
               <div className="flex flex-wrap items-center gap-3">
@@ -201,7 +242,7 @@ export function CalendarPlanner() {
                   <Input
                     className="pl-9"
                     onChange={(event) => setCalendarSearch(event.target.value)}
-                    placeholder="Buscar no calendário"
+                    placeholder="Buscar atividades e lembretes"
                     value={calendarSearch}
                   />
                 </div>
@@ -248,6 +289,7 @@ export function CalendarPlanner() {
                   const dayItems = itemsForDay(day);
                   const outOfMonth = !sameMonth(day, cursorDate);
                   const isSelected = sameDay(day, selectedDate);
+                  const totalItems = dayItems.tasks.length + dayItems.reminders.length;
 
                   return (
                     <button
@@ -260,24 +302,27 @@ export function CalendarPlanner() {
                       onClick={() => setSelectedDate(day)}
                       type="button"
                     >
-                      <span className={`text-sm ${sameDay(day, new Date()) ? "font-semibold text-accent" : "text-text-soft"}`}>
-                        {day.getDate()}
-                      </span>
+                      <div className="flex items-center justify-between">
+                        <span className={`${sameDay(day, new Date()) ? "font-semibold text-accent" : "text-sm text-text-soft"}`}>
+                          {day.getDate()}
+                        </span>
+                        {totalItems ? <span className="text-[10px] text-text-muted">{totalItems}</span> : null}
+                      </div>
                       <div className="mt-3 space-y-1">
-                        {dayItems.events.slice(0, 3).map((event) => (
-                          <div
-                            className={`truncate rounded-full border px-2.5 py-[0.28rem] text-[10px] ${eventToneClass()}`}
-                            key={event.id}
-                          >
-                            {event.title}
-                          </div>
-                        ))}
                         {dayItems.tasks.slice(0, 2).map((task) => (
                           <div
                             className={`truncate rounded-full border px-2.5 py-[0.28rem] text-[10px] ${taskToneClass(task.status)}`}
                             key={task.id}
                           >
                             {task.title}
+                          </div>
+                        ))}
+                        {dayItems.reminders.slice(0, 2).map((reminder) => (
+                          <div
+                            className={`truncate rounded-full border px-2.5 py-[0.28rem] text-[10px] ${reminderToneClass()}`}
+                            key={reminder.id}
+                          >
+                            {reminder.title}
                           </div>
                         ))}
                       </div>
@@ -292,6 +337,7 @@ export function CalendarPlanner() {
             <div className="grid grid-cols-7">
               {weekDates.map((day) => {
                 const dayItems = itemsForDay(day);
+                const done = dayItems.tasks.filter((task) => task.status === "done").length;
                 return (
                   <button
                     className={`min-h-[34rem] border-r border-border/80 p-4 text-left transition hover:bg-bg-panel/48 ${
@@ -303,22 +349,44 @@ export function CalendarPlanner() {
                     onClick={() => setSelectedDate(day)}
                     type="button"
                   >
-                    <p className="text-xs uppercase tracking-[0.18em] text-text-muted">{weekDays[(day.getDay() + 6) % 7]}</p>
+                    <p className="text-xs uppercase tracking-[0.18em] text-text-muted">
+                      {weekDays[(day.getDay() + 6) % 7]}
+                    </p>
                     <p className="mt-2 text-xl font-semibold">{day.getDate()}</p>
+                    <div className="mt-4 rounded-[18px] border border-border/80 bg-bg-panel/56 p-3">
+                      <div className="flex items-center justify-between text-xs text-text-muted">
+                        <span>Fluxo</span>
+                        <span>{dayItems.tasks.length + dayItems.reminders.length} itens</span>
+                      </div>
+                      <div className="mt-2 flex h-2 overflow-hidden rounded-full bg-bg-elevated/84">
+                        <div
+                          className="bg-[#fca5a5] dark:bg-[#713232]"
+                          style={{ width: `${dayItems.tasks.length ? (dayItems.tasks.filter((task) => task.status === "todo").length / dayItems.tasks.length) * 100 : 0}%` }}
+                        />
+                        <div
+                          className="bg-[#fcd34d] dark:bg-[#6f5620]"
+                          style={{ width: `${dayItems.tasks.length ? (dayItems.tasks.filter((task) => task.status === "in_progress").length / dayItems.tasks.length) * 100 : 0}%` }}
+                        />
+                        <div
+                          className="bg-[#86efac] dark:bg-[#25553a]"
+                          style={{ width: `${dayItems.tasks.length ? (done / dayItems.tasks.length) * 100 : 0}%` }}
+                        />
+                      </div>
+                    </div>
                     <div className="mt-4 space-y-2">
-                      {dayItems.events.map((event) => (
-                        <div className={`rounded-[14px] border px-3 py-2 text-[11px] opacity-88 ${eventToneClass()}`} key={event.id}>
-                          <div className="flex items-center justify-between gap-2">
-                            <span>{event.title}</span>
-                            <span className="text-[10px] uppercase tracking-[0.18em] text-text-muted">
-                              {formatEventRecurrence(event)}
-                            </span>
-                          </div>
-                        </div>
-                      ))}
-                      {dayItems.tasks.map((task) => (
+                      {dayItems.tasks.slice(0, 3).map((task) => (
                         <div className={`rounded-[14px] border px-3 py-2 text-[11px] ${taskToneClass(task.status)}`} key={task.id}>
                           {task.title}
+                        </div>
+                      ))}
+                      {dayItems.reminders.slice(0, 2).map((reminder) => (
+                        <div className={`rounded-[14px] border px-3 py-2 text-[11px] opacity-88 ${reminderToneClass()}`} key={reminder.id}>
+                          <div className="flex items-center justify-between gap-2">
+                            <span>{reminder.title}</span>
+                            <span className="text-[10px] uppercase tracking-[0.18em] text-text-muted">
+                              {formatEventRecurrence(reminder)}
+                            </span>
+                          </div>
                         </div>
                       ))}
                     </div>
@@ -341,32 +409,37 @@ export function CalendarPlanner() {
                 </h4>
               </div>
               <div className="grid gap-4 md:grid-cols-3">
-                <Card className="space-y-3 bg-bg-panel/58">
-                  <p className="text-sm text-text-soft">Lembretes</p>
-                  {itemsForDay(cursorDate).events.length ? (
-                    itemsForDay(cursorDate).events.map((event) => (
-                      <div className="rounded-[16px] border border-border/80 bg-bg-panel/72 p-3" key={event.id}>
-                        <p className="font-medium">{event.title}</p>
-                        <p className="mt-1 text-sm text-text-soft">
-                          {formatDateTime(event.startsAt)} • {formatEventRecurrence(event)}
-                        </p>
+                {(["Manhã", "Tarde", "Noite"] as const).map((bucket) => {
+                  const bucketItems = selectedTimeline.filter((item) => item.bucket === bucket);
+
+                  return (
+                    <Card className="space-y-3 bg-bg-panel/58" key={bucket}>
+                      <div className="flex items-center justify-between">
+                        <p className="text-sm text-text-soft">{bucket}</p>
+                        <Badge>{bucketItems.length}</Badge>
                       </div>
-                    ))
-                  ) : <EmptyState description="Sem lembretes neste dia." title="Agenda vazia" />}
-                </Card>
-                <Card className="space-y-3 bg-bg-panel/58">
-                  <p className="text-sm text-text-soft">Tarefas</p>
-                  {itemsForDay(cursorDate).tasks.length ? (
-                    itemsForDay(cursorDate).tasks.map((task) => (
-                      <div className={`rounded-[16px] border px-3 py-3 ${taskToneClass(task.status)}`} key={task.id}>
-                        <p className="font-medium">{task.title}</p>
-                        <p className="mt-1 text-sm text-text-soft">{task.description ?? "Sem descrição"}</p>
-                      </div>
-                    ))
-                  ) : (
-                    <EmptyState description="Sem tarefas neste dia." title="Sem tarefas" />
-                  )}
-                </Card>
+                      {bucketItems.length ? (
+                        bucketItems.map((item) =>
+                          item.kind === "task" ? (
+                            <div className={`rounded-[16px] border px-3 py-3 ${taskToneClass(item.status)}`} key={item.id}>
+                              <p className="font-medium">{item.title}</p>
+                              <p className="mt-1 text-sm text-text-soft">{item.description ?? "Prazo do dia"}</p>
+                              <p className="mt-2 text-xs uppercase tracking-[0.16em] text-text-muted">{item.meta}</p>
+                            </div>
+                          ) : (
+                            <div className="rounded-[16px] border border-border/80 bg-bg-panel/72 p-3" key={item.id}>
+                              <p className="font-medium">{item.title}</p>
+                              <p className="mt-1 text-sm text-text-soft">{item.description ?? item.recurrence}</p>
+                              <p className="mt-2 text-xs uppercase tracking-[0.16em] text-text-muted">{item.meta}</p>
+                            </div>
+                          )
+                        )
+                      ) : (
+                        <EmptyState description={`Nada programado para ${bucket.toLowerCase()}.`} title={`${bucket} livre`} />
+                      )}
+                    </Card>
+                  );
+                })}
               </div>
             </div>
           ) : null}
@@ -375,6 +448,13 @@ export function CalendarPlanner() {
             <div className="grid gap-4 p-6 md:grid-cols-2 xl:grid-cols-3">
               {yearMonths.map((month) => {
                 const grid = buildMonthGrid(month).slice(0, 35);
+                const monthDaysWithItems = grid.filter((day) => sameMonth(day, month) && (itemsForDay(day).tasks.length || itemsForDay(day).reminders.length)).length;
+                const monthItems = grid.reduce((total, day) => {
+                  if (!sameMonth(day, month)) return total;
+                  const dayItems = itemsForDay(day);
+                  return total + dayItems.tasks.length + dayItems.reminders.length;
+                }, 0);
+
                 return (
                   <button
                     className="rounded-[26px] border border-border/80 bg-bg-panel/58 p-4 text-left transition hover:border-accent/70 hover:bg-bg-panel/72"
@@ -385,16 +465,26 @@ export function CalendarPlanner() {
                     }}
                     type="button"
                   >
-                    <p className="text-lg font-semibold capitalize">{monthLabel(month)}</p>
+                    <div className="flex items-start justify-between gap-3">
+                      <div>
+                        <p className="text-lg font-semibold capitalize">{monthLabel(month)}</p>
+                        <p className="mt-1 text-xs uppercase tracking-[0.16em] text-text-muted">
+                          {monthDaysWithItems} dias com sinal
+                        </p>
+                      </div>
+                      <Badge>{monthItems}</Badge>
+                    </div>
                     <div className="mt-4 grid grid-cols-7 gap-1 text-center text-[11px] text-text-muted">
                       {weekDays.map((day) => (
                         <span key={day}>{day.slice(0, 1)}</span>
                       ))}
                       {grid.map((day) => {
-                        const count = itemsForDay(day).events.length + itemsForDay(day).tasks.length;
+                        const count = itemsForDay(day).reminders.length + itemsForDay(day).tasks.length;
                         return (
                           <span
-                            className={`rounded-full py-1 ${sameMonth(day, month) ? "text-text" : "opacity-30"} ${count ? "bg-accent-soft text-accent" : ""}`}
+                            className={`rounded-full py-1 ${sameMonth(day, month) ? "text-text" : "opacity-30"} ${
+                              count > 2 ? "bg-accent text-white dark:text-slate-950" : count ? "bg-accent-soft text-accent" : ""
+                            }`}
                             key={day.toISOString()}
                           >
                             {day.getDate()}
@@ -412,90 +502,130 @@ export function CalendarPlanner() {
         <div className="space-y-4">
           <Card className="space-y-4 bg-bg-panel/52">
             <div>
-              <p className="text-sm text-text-soft">Resumo do dia</p>
+              <p className="text-sm text-text-soft">Resumo do dia selecionado</p>
               <h3 className="mt-1 text-2xl font-semibold tracking-[-0.04em]">
-                {new Intl.DateTimeFormat("pt-BR", {
-                  day: "2-digit",
-                  month: "long"
-                }).format(selectedDate)}
+                {new Intl.DateTimeFormat("pt-BR", { day: "2-digit", month: "long" }).format(selectedDate)}
               </h3>
             </div>
-            <div className="grid gap-3 sm:grid-cols-3 xl:grid-cols-1">
+            <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-1">
               <div className="rounded-[20px] bg-bg-panel/74 p-4">
-                <p className="text-xs uppercase tracking-[0.2em] text-text-muted">Tarefas</p>
-                <p className="mt-2 text-3xl font-semibold tracking-[-0.05em]">{selectedTasks.length}</p>
+                <p className="text-xs uppercase tracking-[0.2em] text-text-muted">Atividades</p>
+                <p className="mt-2 text-3xl font-semibold tracking-[-0.05em]">{selectedDayItems.tasks.length}</p>
               </div>
               <div className="rounded-[20px] bg-bg-panel/74 p-4">
                 <p className="text-xs uppercase tracking-[0.2em] text-text-muted">Lembretes</p>
-                <p className="mt-2 text-3xl font-semibold tracking-[-0.05em]">{selectedEvents.length}</p>
+                <p className="mt-2 text-3xl font-semibold tracking-[-0.05em]">{selectedDayItems.reminders.length}</p>
               </div>
             </div>
           </Card>
 
           <Card className="space-y-4 bg-bg-panel/52">
-            <p className="text-sm text-text-soft">Agenda de atividades</p>
-            {selectedEvents.length || selectedTasks.length ? (
+            <div className="flex items-center justify-between">
+              <p className="text-sm text-text-soft">Leitura contextual</p>
+              <Badge>{selectedTimeline.length}</Badge>
+            </div>
+            {selectedTimeline.length ? (
               <div className="space-y-3">
-                {selectedEvents.map((event) => (
-                  <div className="rounded-[18px] bg-bg-panel/72 p-4" key={event.id}>
-                    <p className="font-medium">{event.title}</p>
-                    <p className="mt-1 text-sm text-text-soft">{formatDateTime(event.startsAt)}</p>
-                  </div>
-                ))}
-                {selectedTasks.map((task) => (
-                  <div className="rounded-[18px] bg-bg-panel/72 p-4" key={task.id}>
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm font-medium">{task.title}</span>
-                      {task.projectId ? (
-                        <ProjectPill
-                          color={projects.find((project) => project.id === task.projectId)?.color ?? "#2563eb"}
-                          name={projects.find((project) => project.id === task.projectId)?.name ?? "Projeto"}
-                        />
-                      ) : null}
+                {selectedTimeline.map((item) =>
+                  item.kind === "task" ? (
+                    <div className={`rounded-[18px] border px-4 py-4 ${taskToneClass(item.status)}`} key={item.id}>
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm font-medium">{item.title}</span>
+                        {item.projectId ? (
+                          <ProjectPill
+                            color={projects.find((project) => project.id === item.projectId)?.color ?? "#2563eb"}
+                            name={projects.find((project) => project.id === item.projectId)?.name ?? "Projeto"}
+                          />
+                        ) : null}
+                      </div>
+                      <p className="mt-1 text-sm text-text-soft">{item.description ?? "Prazo vinculado ao dia."}</p>
+                      <p className="mt-2 text-xs uppercase tracking-[0.16em] text-text-muted">{item.meta}</p>
                     </div>
-                    <p className="mt-1 text-sm text-text-soft">{task.description ?? "Prazo do dia"}</p>
-                  </div>
-                ))}
+                  ) : (
+                    <div className="rounded-[18px] border border-border/80 bg-bg-panel/72 p-4" key={item.id}>
+                      <p className="font-medium">{item.title}</p>
+                      <p className="mt-1 text-sm text-text-soft">{item.description ?? item.recurrence}</p>
+                      <p className="mt-2 text-xs uppercase tracking-[0.16em] text-text-muted">{item.meta}</p>
+                    </div>
+                  )
+                )}
               </div>
             ) : (
-              <EmptyState description="Selecione um dia com itens ou crie atividades para começar." title="Dia sem itens" />
+              <EmptyState description="Selecione um dia com itens ou crie uma nova atividade para este calendário." title="Dia sem itens" />
             )}
           </Card>
 
-          <Card className="space-y-4 bg-bg-panel/5">
-            <p className="text-sm text-text-soft">Nova atividade no calendário</p>
-            <Input onChange={(event) => setTitle(event.target.value)} placeholder="Título" value={title} />
-            <Input onChange={(event) => setStartsAt(event.target.value)} type="datetime-local" value={startsAt} />
-            <Input onChange={(event) => setEndsAt(event.target.value)} type="datetime-local" value={endsAt} />
-            <Select onChange={(event) => setTaskId(event.target.value)} value={taskId}>
-              <option value="">Sem tarefa vinculada</option>
-              {tasks.map((task) => (
-                <option key={task.id} value={task.id}>
-                  {task.title}
-                </option>
-              ))}
-            </Select>
-            <Button
-              onClick={() => {
-                if (!title.trim()) return;
-                addEvent({
-                  userId: user?.id ?? "demo-user",
-                  title,
-                  description: null,
-                  startsAt: new Date(startsAt).toISOString(),
-                  endsAt: new Date(endsAt).toISOString(),
-                  taskId: taskId || null,
-                  location: null,
-                  isAllDay: false
-                });
-                setTitle("");
-              }}
-            >
-              Salvar atividade
-            </Button>
+          <Card className="space-y-4 bg-bg-panel/56">
+            <p className="text-sm text-text-soft">Criar a partir do calendário</p>
+            <p className="text-sm leading-7 text-text-soft">
+              O calendário agora puxa o mesmo fluxo de criação das atividades. Você registra a atividade uma vez
+              e decide ali se ela também vira lembrete recorrente.
+            </p>
+            <div className="flex flex-wrap gap-2">
+              <Button
+                onClick={() =>
+                  openTaskComposer({
+                    mode: "full",
+                    defaultDueDate: selectedDate.toISOString().slice(0, 10)
+                  })
+                }
+              >
+                Nova atividade
+              </Button>
+              <Button
+                onClick={() =>
+                  openTaskComposer({
+                    mode: "quick",
+                    defaultDueDate: selectedDate.toISOString().slice(0, 10)
+                  })
+                }
+                variant="secondary"
+              >
+                Atividade rápida
+              </Button>
+            </div>
           </Card>
         </div>
       </div>
     </div>
   );
+}
+
+function buildTimeline(day: Date, tasks: Task[], reminders: CalendarEvent[]): DayTimelineItem[] {
+  const taskItems: DayTimelineItem[] = tasks.map((task) => ({
+    id: task.id,
+    kind: "task",
+    title: task.title,
+    description: task.description,
+    bucket:
+      task.status === "in_progress"
+        ? "Tarde"
+        : task.priority === "high"
+          ? "Manhã"
+          : task.status === "done"
+            ? "Noite"
+            : "Tarde",
+    meta: task.status === "done" ? "Concluída" : task.status === "in_progress" ? "Em andamento" : "Prazo do dia",
+    status: task.status,
+    projectId: task.projectId
+  }));
+
+  const reminderItems: DayTimelineItem[] = reminders.map((reminder) => {
+    const anchor = new Date(reminder.startsAt);
+    const sameReferenceDay = sameDay(anchor, day);
+    return {
+      id: reminder.id,
+      kind: "reminder",
+      title: reminder.title,
+      description: reminder.description,
+      bucket: sameReferenceDay ? bucketLabel(anchor) : "Manhã",
+      meta: sameReferenceDay ? formatDateTime(reminder.startsAt) : "Recorrência ativa neste dia",
+      recurrence: formatEventRecurrence(reminder)
+    };
+  });
+
+  return [...taskItems, ...reminderItems].sort((a, b) => {
+    const order = { "Manhã": 0, "Tarde": 1, "Noite": 2 };
+    return order[a.bucket] - order[b.bucket];
+  });
 }

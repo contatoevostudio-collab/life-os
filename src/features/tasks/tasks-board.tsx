@@ -1,5 +1,7 @@
 "use client";
 
+import type { Route } from "next";
+import Link from "next/link";
 import { useEffect, useState } from "react";
 
 import { Badge } from "@/components/ui/badge";
@@ -24,15 +26,12 @@ export function TasksBoard() {
     toggleTaskStatus,
     updateTask,
     deleteTask,
-    addProject,
     searchQuery
   } = useAppState();
   const [view, setView] = useState<ViewMode>("list");
   const [statusFilter, setStatusFilter] = useState<"all" | TaskStatus>("all");
   const [priorityFilter, setPriorityFilter] = useState<"all" | Priority>("all");
   const [projectFilter, setProjectFilter] = useState("all");
-  const [projectName, setProjectName] = useState("");
-  const [projectColor, setProjectColor] = useState("#4f8a7b");
   const [editingTaskId, setEditingTaskId] = useState<string | null>(null);
   const [draggingTaskId, setDraggingTaskId] = useState<string | null>(null);
   const [dropTarget, setDropTarget] = useState<TaskStatus | null>(null);
@@ -92,7 +91,7 @@ export function TasksBoard() {
   return (
     <div className="space-y-6">
       <SectionHeading
-        description="Atividades com fluxo único: criação rápida, detalhes completos e visualização em lista ou kanban."
+        description="Uma operação mais limpa: criação em um bloco, filtros em outro e execução separada por lista ou kanban."
         eyebrow="Módulo"
         title="Atividades"
         action={
@@ -110,87 +109,88 @@ export function TasksBoard() {
         }
       />
 
-      <Card className="grid gap-4 xl:grid-cols-[1.6fr_repeat(4,1fr)]">
-        <div className="space-y-2">
-          <label className="block text-sm text-text-soft">Atividades</label>
+      <div className="grid gap-4 xl:grid-cols-[0.92fr_1.2fr]">
+        <Card className="editorial-surface space-y-4 bg-bg-elevated/56">
+          <div>
+            <p className="text-sm text-text-soft">Criação</p>
+            <h3 className="mt-2 text-2xl font-semibold tracking-[-0.05em]">Abra o fluxo da atividade com menos ruído.</h3>
+            <p className="mt-2 text-sm leading-7 text-text-soft">
+              Use o modo completo quando quiser configurar tudo e o rápido para registrar sem perder o ritmo.
+            </p>
+          </div>
           <div className="flex flex-wrap gap-2">
             <Button onClick={() => setFullModalOpen(true)}>Nova atividade</Button>
             <Button onClick={() => setQuickModalOpen(true)} variant="secondary">
               Atividade rápida
             </Button>
+            <Link href={"/projects" as Route}>
+              <Button variant="ghost">Abrir projetos</Button>
+            </Link>
           </div>
-        </div>
-        <div>
-          <label className="mb-2 block text-sm text-text-soft">Projeto novo</label>
-          <div className="flex gap-2">
-            <Input
-              onChange={(event) => setProjectName(event.target.value)}
-              placeholder="Nome do projeto"
-              value={projectName}
-            />
-            <Input
-              aria-label="Cor do projeto"
-              className="h-11 w-14 rounded-[16px] px-2"
-              onChange={(event) => setProjectColor(event.target.value)}
-              type="color"
-              value={projectColor}
-            />
-            <Button
-              onClick={() => {
-                if (!projectName.trim()) return;
-                addProject({
-                  name: projectName,
-                  color: projectColor
-                });
-                setProjectName("");
-                setProjectColor("#4f8a7b");
-              }}
-              variant="secondary"
-            >
-              Criar
-            </Button>
-          </div>
-        </div>
+        </Card>
 
-        <div>
-          <label className="mb-2 block text-sm text-text-soft">Status</label>
-          <Select onChange={(event) => setStatusFilter(event.target.value as "all" | TaskStatus)} value={statusFilter}>
-            <option value="all">Todos</option>
-            <option value="todo">A fazer</option>
-            <option value="in_progress">Em andamento</option>
-            <option value="done">Concluídas</option>
-          </Select>
-        </div>
-        <div>
-          <label className="mb-2 block text-sm text-text-soft">Prioridade</label>
-          <Select
-            onChange={(event) => setPriorityFilter(event.target.value as "all" | Priority)}
-            value={priorityFilter}
-          >
-            <option value="all">Todas</option>
-            <option value="low">Baixa</option>
-            <option value="medium">Média</option>
-            <option value="high">Alta</option>
-          </Select>
-        </div>
-        <div>
-          <label className="mb-2 block text-sm text-text-soft">Projeto</label>
-          <Select onChange={(event) => setProjectFilter(event.target.value)} value={projectFilter}>
-            <option value="all">Todos</option>
-            {projects.length ? (
-              projects.map((project) => (
-                <option key={project.id} value={project.id}>
-                  {project.name}
+        <Card className="grid gap-4 bg-bg-elevated/52 md:grid-cols-3">
+          <div>
+            <label className="mb-2 block text-sm text-text-soft">Status</label>
+            <Select onChange={(event) => setStatusFilter(event.target.value as "all" | TaskStatus)} value={statusFilter}>
+              <option value="all">Todos</option>
+              <option value="todo">Pendente</option>
+              <option value="in_progress">Em andamento</option>
+              <option value="done">Concluídas</option>
+            </Select>
+          </div>
+          <div>
+            <label className="mb-2 block text-sm text-text-soft">Prioridade</label>
+            <Select
+              onChange={(event) => setPriorityFilter(event.target.value as "all" | Priority)}
+              value={priorityFilter}
+            >
+              <option value="all">Todas</option>
+              <option value="low">Baixa</option>
+              <option value="medium">Média</option>
+              <option value="high">Alta</option>
+            </Select>
+          </div>
+          <div>
+            <label className="mb-2 block text-sm text-text-soft">Projeto</label>
+            <Select onChange={(event) => setProjectFilter(event.target.value)} value={projectFilter}>
+              <option value="all">Todos</option>
+              {projects.length ? (
+                projects.map((project) => (
+                  <option key={project.id} value={project.id}>
+                    {project.name}
+                  </option>
+                ))
+              ) : (
+                <option disabled value="empty">
+                  Sem projetos
                 </option>
-              ))
-            ) : (
-              <option disabled value="empty">
-                Sem projetos
-              </option>
-            )}
-          </Select>
-        </div>
-      </Card>
+              )}
+            </Select>
+          </div>
+        </Card>
+      </div>
+
+      <div className="grid gap-4 md:grid-cols-3">
+        <Card className="bg-bg-panel/52">
+          <p className="text-sm text-text-soft">Pendentes</p>
+          <p className="mt-2 text-3xl font-semibold tracking-[-0.05em]">
+            {filteredTasks.filter((task) => task.status === "todo").length}
+          </p>
+        </Card>
+        <Card className="bg-bg-panel/52">
+          <p className="text-sm text-text-soft">Em andamento</p>
+          <p className="mt-2 text-3xl font-semibold tracking-[-0.05em]">
+            {filteredTasks.filter((task) => task.status === "in_progress").length}
+          </p>
+        </Card>
+        <Card className="bg-bg-panel/52">
+          <p className="text-sm text-text-soft">Concluídas</p>
+          <p className="mt-2 text-3xl font-semibold tracking-[-0.05em]">
+            {filteredTasks.filter((task) => task.status === "done").length}
+          </p>
+        </Card>
+      </div>
 
       {view === "list" ? (
         <div className="grid gap-4 xl:grid-cols-[1.3fr_0.9fr]">
@@ -270,7 +270,7 @@ export function TasksBoard() {
           </div>
 
           <Card className="space-y-4">
-            <p className="text-sm text-text-soft">Editor rapido</p>
+            <p className="text-sm text-text-soft">Painel de edição</p>
             {editingTaskId ? (
               (() => {
                 const task = tasks.find((item) => item.id === editingTaskId);
@@ -371,7 +371,7 @@ export function TasksBoard() {
               })()
             ) : (
               <p className="text-sm text-text-soft">
-                Escolha uma tarefa da lista para editar campos ou excluir.
+                Escolha uma atividade da lista para editar detalhes, status, projeto ou excluir.
               </p>
             )}
           </Card>
