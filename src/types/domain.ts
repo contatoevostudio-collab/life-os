@@ -31,7 +31,6 @@ export interface Task {
   scheduledEnd?: string | null;
   tags: string[];
   completedAt?: string | null;
-<<<<<<< HEAD
   subtasks?: TaskSubtask[];
   order?: number;
   startedAt?: string | null;
@@ -42,8 +41,6 @@ export interface TaskSubtask {
   id: string;
   title: string;
   done: boolean;
-=======
->>>>>>> parent of 8baacc3 (20 alteracoes)
 }
 
 export interface CalendarEvent {

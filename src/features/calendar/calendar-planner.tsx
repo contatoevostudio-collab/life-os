@@ -48,24 +48,16 @@ function buildMonthGrid(baseDate: Date) {
 }
 
 export function CalendarPlanner() {
-<<<<<<< HEAD
   const { events, tasks, transactions, addEvent, searchQuery, projects } = useAppState();
-=======
-  const { events, tasks, addEvent, updateTask, searchQuery } = useAppState();
->>>>>>> parent of 8baacc3 (20 alteracoes)
   const { user } = useAuth();
   const [view, setView] = useState<CalendarView>("month");
   const [title, setTitle] = useState("");
   const [startsAt, setStartsAt] = useState("2026-04-10T10:00");
   const [endsAt, setEndsAt] = useState("2026-04-10T11:00");
   const [taskId, setTaskId] = useState("");
-<<<<<<< HEAD
   const [monthCursor, setMonthCursor] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [calendarSearch, setCalendarSearch] = useState("");
-=======
-  const [draggingTaskId, setDraggingTaskId] = useState("");
->>>>>>> parent of 8baacc3 (20 alteracoes)
 
   const monthGrid = useMemo(() => buildMonthGrid(monthCursor), [monthCursor]);
   const monthLabel = new Intl.DateTimeFormat("pt-BR", {
@@ -122,7 +114,6 @@ export function CalendarPlanner() {
         }
       />
 
-<<<<<<< HEAD
       <div className="grid gap-4 xl:grid-cols-[1.7fr_0.8fr]">
         <Card className="overflow-hidden rounded-[30px] p-0">
           <div className="border-b border-border px-6 py-5">
@@ -168,20 +159,6 @@ export function CalendarPlanner() {
               </div>
             </div>
           </div>
-=======
-      <div className="grid gap-4 xl:grid-cols-[1.4fr_1fr]">
-        <Card className="space-y-4">
-          <p className="text-sm text-text-soft">Agenda {view}</p>
-          <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-1">
-            {["08:00", "10:00", "12:00", "14:00", "16:00", "18:00"].map((slot) => (
-              <div
-                className="rounded-[20px] border border-dashed border-border-strong bg-[linear-gradient(180deg,rgba(255,255,255,0.22),transparent)] px-4 py-5 transition hover:border-accent hover:bg-accent-soft/30"
-                key={slot}
-                onDragOver={(event) => event.preventDefault()}
-                onDrop={() => {
-                  const task = tasks.find((item) => item.id === draggingTaskId);
-                  if (!task) return;
->>>>>>> parent of 8baacc3 (20 alteracoes)
 
           <div className="grid grid-cols-7 border-b border-border px-2 py-3">
             {weekDays.map((day) => (
@@ -190,7 +167,6 @@ export function CalendarPlanner() {
               </div>
             ))}
           </div>
-<<<<<<< HEAD
 
           <div className="grid grid-cols-7">
             {monthGrid.map((day) => {
@@ -215,21 +191,6 @@ export function CalendarPlanner() {
                     <span className={`text-sm ${sameDay(day, new Date()) ? "font-semibold text-accent" : "text-text-soft"}`}>
                       {day.getDate()}
                     </span>
-=======
-          <div className="space-y-3">
-            {filteredEvents.length ? (
-              [...filteredEvents]
-                .sort((a, b) => a.startsAt.localeCompare(b.startsAt))
-                .map((event) => (
-                  <div className="rounded-[20px] border border-border bg-bg-elevated px-4 py-4" key={event.id}>
-                    <div className="flex items-center justify-between gap-3">
-                      <div>
-                        <p className="font-medium">{event.title}</p>
-                        <p className="mt-1 text-sm text-text-soft">{formatDateTime(event.startsAt)}</p>
-                      </div>
-                      <span className="text-sm text-text-muted">{event.taskId ? "Com tarefa" : "Evento"}</span>
-                    </div>
->>>>>>> parent of 8baacc3 (20 alteracoes)
                   </div>
                   <div className="mt-3 space-y-1.5">
                     {dayEvents.slice(0, 3).map((event) => (

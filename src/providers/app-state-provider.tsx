@@ -48,14 +48,7 @@ interface AppStateContextValue {
   updatePreferences: (patch: Partial<UserPreferences>) => void;
   setSearchQuery: (value: string) => void;
   closeOnboarding: () => void;
-<<<<<<< HEAD
-  togglePriorityTask: (taskId: string) => void;
-  toggleHabit: (habitId: string) => void;
-  addHabit: (title: string) => void;
-  addFinanceCategory: (name: string) => void;
   setPomodoroState: (state: { seconds: number | null; running: boolean }) => void;
-=======
->>>>>>> parent of 8baacc3 (20 alteracoes)
 }
 
 const AppStateContext = createContext<AppStateContextValue | null>(null);
@@ -179,7 +172,6 @@ export function AppStateProvider({ children }: PropsWithChildren) {
         setProjects((current) => [{ ...project, id: uid("project") }, ...current]);
       },
       addTask(task) {
-<<<<<<< HEAD
         setTasks((current) => [
           {
             ...task,
@@ -192,36 +184,35 @@ export function AppStateProvider({ children }: PropsWithChildren) {
           ...current
         ]);
       },
-      duplicateTask(taskId) {
-        setTasks((current) => {
-          const found = current.find((task) => task.id === taskId);
-          if (!found) return current;
-          return [
-            {
-              ...found,
-              id: uid("task"),
-              title: `${found.title} (cópia)`,
-              status: "todo",
-              completedAt: null,
-              startedAt: null,
-              trackedSeconds: 0,
-              subtasks: found.subtasks?.map((subtask) => ({
-                ...subtask,
-                id: uid("subtask"),
-                done: false
-              })),
-              order: current.length + 1
-            },
-            ...current
-          ];
-        });
-=======
-        setTasks((current) => [{ ...task, id: uid("task") }, ...current]);
->>>>>>> parent of 8baacc3 (20 alteracoes)
-      },
       updateTask(taskId, patch) {
         setTasks((current) =>
-          current.map((task) => (task.id === taskId ? { ...task, ...patch } : task))
+          current.map((task) => {
+            if (task.id !== taskId) {
+              return task;
+            }
+
+            if (!patch.status || patch.status === task.status) {
+              return { ...task, ...patch };
+            }
+
+            const now = new Date();
+            const alreadyTracked = task.trackedSeconds ?? 0;
+            const liveTracked =
+              task.status === "in_progress" && task.startedAt
+                ? Math.max(0, Math.floor((now.getTime() - new Date(task.startedAt).getTime()) / 1000))
+                : 0;
+
+            return {
+              ...task,
+              ...patch,
+              startedAt: patch.status === "in_progress" ? now.toISOString() : null,
+              trackedSeconds:
+                task.status === "in_progress" && patch.status !== "in_progress"
+                  ? alreadyTracked + liveTracked
+                  : alreadyTracked,
+              completedAt: patch.status === "done" ? now.toISOString() : null
+            };
+          })
         );
       },
       deleteTask(taskId) {
@@ -245,32 +236,6 @@ export function AppStateProvider({ children }: PropsWithChildren) {
       },
       closeOnboarding() {
         setOnboardingOpen(false);
-<<<<<<< HEAD
-      },
-      togglePriorityTask(taskId) {
-        setPreferences((current) => {
-          const exists = current.priorityTaskIds.includes(taskId);
-          const next = exists
-            ? current.priorityTaskIds.filter((id) => id !== taskId)
-            : [...current.priorityTaskIds, taskId].slice(-3);
-          return { ...current, priorityTaskIds: next };
-        });
-      },
-      toggleHabit(habitId) {
-        setHabits((current) =>
-          current.map((habit) =>
-            habit.id === habitId ? { ...habit, completedToday: !habit.completedToday } : habit
-          )
-        );
-      },
-      addHabit(title) {
-        setHabits((current) => [...current, { id: uid("habit"), title, completedToday: false }]);
-      },
-      addFinanceCategory(name) {
-        setPreferences((current) => ({
-          ...current,
-          financeCategories: Array.from(new Set([...current.financeCategories, name]))
-        }));
       },
       setPomodoroState(state) {
         setActivePomodoroSeconds(state.seconds);
@@ -280,7 +245,6 @@ export function AppStateProvider({ children }: PropsWithChildren) {
     [
       activePomodoroSeconds,
       events,
-      habits,
       onboardingOpen,
       pomodoroRunning,
       preferences,
@@ -290,11 +254,6 @@ export function AppStateProvider({ children }: PropsWithChildren) {
       tasks,
       transactions
     ]
-=======
-      }
-    }),
-    [events, onboardingOpen, preferences, projects, searchQuery, sessions, tasks, transactions]
->>>>>>> parent of 8baacc3 (20 alteracoes)
   );
 
   return <AppStateContext.Provider value={value}>{children}</AppStateContext.Provider>;

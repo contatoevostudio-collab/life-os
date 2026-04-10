@@ -35,19 +35,16 @@ export function TasksBoard() {
   const [projectFilter, setProjectFilter] = useState("all");
   const [quickTitle, setQuickTitle] = useState("");
   const [projectName, setProjectName] = useState("");
+  const [projectColor, setProjectColor] = useState("#4f8a7b");
   const [editingTaskId, setEditingTaskId] = useState<string | null>(null);
   const [draggingTaskId, setDraggingTaskId] = useState<string | null>(null);
   const [dropTarget, setDropTarget] = useState<TaskStatus | null>(null);
-<<<<<<< HEAD
-  const uniqueTags = Array.from(new Set(tasks.flatMap((task) => task.tags)));
   const [clockNow, setClockNow] = useState(Date.now());
 
   useEffect(() => {
     const interval = window.setInterval(() => setClockNow(Date.now()), 1000);
     return () => window.clearInterval(interval);
   }, []);
-=======
->>>>>>> parent of 8baacc3 (20 alteracoes)
 
   const filteredTasks = tasks.filter((task) => {
     const matchesSearch =
@@ -139,14 +136,22 @@ export function TasksBoard() {
               placeholder="Nome do projeto"
               value={projectName}
             />
+            <Input
+              aria-label="Cor do projeto"
+              className="h-11 w-14 rounded-[16px] px-2"
+              onChange={(event) => setProjectColor(event.target.value)}
+              type="color"
+              value={projectColor}
+            />
             <Button
               onClick={() => {
                 if (!projectName.trim()) return;
                 addProject({
                   name: projectName,
-                  color: "#4f8a7b"
+                  color: projectColor
                 });
                 setProjectName("");
+                setProjectColor("#4f8a7b");
               }}
               variant="secondary"
             >
@@ -409,7 +414,6 @@ export function TasksBoard() {
                       </div>
                       <p className="mt-3 font-medium">{task.title}</p>
                       <p className="mt-2 text-sm text-text-soft">{task.description ?? "Sem descrição"}</p>
-<<<<<<< HEAD
                       {task.status === "in_progress" ? (
                         <p className="mt-2 text-sm font-medium text-accent">
                           {formatDurationSeconds(getTaskElapsedSeconds(task.id))}
@@ -420,8 +424,6 @@ export function TasksBoard() {
                           {task.subtasks.filter((subtask) => subtask.done).length}/{task.subtasks.length} subtarefas
                         </p>
                       ) : null}
-=======
->>>>>>> parent of 8baacc3 (20 alteracoes)
                     </div>
                   ))
               ) : (

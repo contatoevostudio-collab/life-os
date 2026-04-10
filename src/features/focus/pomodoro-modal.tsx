@@ -18,11 +18,7 @@ interface PomodoroModalProps {
 }
 
 export function PomodoroModal({ open, onClose }: PomodoroModalProps) {
-<<<<<<< HEAD
-  const { tasks, preferences, saveSession, sessions, setPomodoroState } = useAppState();
-=======
-  const { tasks, preferences, saveSession } = useAppState();
->>>>>>> parent of 8baacc3 (20 alteracoes)
+  const { tasks, preferences, saveSession, setPomodoroState } = useAppState();
   const { user } = useAuth();
   const [focusMinutes, setFocusMinutes] = useState(preferences.pomodoroFocusMinutes);
   const [breakMinutes, setBreakMinutes] = useState(preferences.pomodoroBreakMinutes);

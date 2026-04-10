@@ -1,16 +1,13 @@
 "use client";
 
-import { useState, type PropsWithChildren } from "react";
+import { useEffect, useState, type PropsWithChildren } from "react";
 import Link from "next/link";
 
 import { navigation } from "@/config/navigation";
 import { OnboardingModal } from "@/components/layout/onboarding-modal";
 import { PomodoroModal } from "@/features/focus/pomodoro-modal";
-<<<<<<< HEAD
 import { useAppState } from "@/providers/app-state-provider";
 import { formatDurationSeconds } from "@/lib/utils";
-=======
->>>>>>> parent of 8baacc3 (20 alteracoes)
 
 import { Sidebar } from "./sidebar";
 import { Topbar } from "./topbar";
@@ -18,23 +15,7 @@ import { Topbar } from "./topbar";
 export function AppShell({ children }: PropsWithChildren) {
   const [pomodoroOpen, setPomodoroOpen] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
-<<<<<<< HEAD
-  const [paletteOpen, setPaletteOpen] = useState(false);
-  const { preferences, activePomodoroSeconds, pomodoroRunning } = useAppState();
-
-  useEffect(() => {
-    function onKeyDown(event: KeyboardEvent) {
-      if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "k") {
-        event.preventDefault();
-        setPaletteOpen(true);
-      }
-    }
-
-    window.addEventListener("keydown", onKeyDown);
-    return () => window.removeEventListener("keydown", onKeyDown);
-  }, []);
-=======
->>>>>>> parent of 8baacc3 (20 alteracoes)
+  const { activePomodoroSeconds, pomodoroRunning } = useAppState();
 
   useEffect(() => {
     if (pomodoroRunning && activePomodoroSeconds !== null) {
