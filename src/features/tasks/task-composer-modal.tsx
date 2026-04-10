@@ -124,8 +124,8 @@ export function TaskComposerModal({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/36 p-4 backdrop-blur-md">
-      <Card className="editorial-surface animate-fade-in w-full max-w-2xl overflow-hidden rounded-[34px] p-0">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/28 p-4 backdrop-blur-sm">
+      <Card className="animate-fade-in w-full max-w-[44rem] overflow-hidden rounded-[32px] bg-bg-elevated/74 p-0">
         <div className="h-1.5 bg-[linear-gradient(90deg,rgba(75,136,220,1),rgba(75,136,220,0.18))]" />
 
         <div className="flex items-start justify-between gap-4 px-6 pb-1 pt-6 md:px-7">
@@ -140,7 +140,7 @@ export function TaskComposerModal({
             </p>
           </div>
           <button
-            className="inline-flex size-11 items-center justify-center rounded-[16px] border border-border bg-bg-elevated/80 text-text-soft transition hover:bg-bg-panel"
+            className="inline-flex size-10 items-center justify-center rounded-[15px] border border-border/80 bg-bg-panel/62 text-text-soft transition hover:bg-bg-panel/82"
             onClick={onClose}
             type="button"
           >
@@ -148,9 +148,9 @@ export function TaskComposerModal({
           </button>
         </div>
 
-        <div className="grid gap-5 px-6 pb-6 pt-3 md:px-7">
+        <div className="grid gap-4 px-6 pb-6 pt-3 md:px-7">
           <div className="grid gap-5 md:grid-cols-[1.15fr_0.85fr]">
-            <div className="rounded-[24px] border border-border bg-bg-elevated/86 p-4">
+            <div className="rounded-[22px] border border-border/80 bg-bg-panel/62 p-4">
               <label className="mb-2 block text-sm text-text-soft">Título</label>
               <Input
                 onChange={(event) => setForm((current) => ({ ...current, title: event.target.value }))}
@@ -159,7 +159,7 @@ export function TaskComposerModal({
               />
             </div>
 
-            <div className="rounded-[24px] border border-border bg-bg-elevated/86 p-4">
+            <div className="rounded-[22px] border border-border/80 bg-bg-panel/62 p-4">
               <div className="grid gap-4">
                 <div>
                   <label className="mb-2 block text-sm text-text-soft">Prioridade</label>
@@ -194,7 +194,7 @@ export function TaskComposerModal({
           </div>
 
           {mode === "full" ? (
-            <div className="rounded-[24px] border border-border bg-bg-elevated/86 p-4">
+            <div className="rounded-[22px] border border-border/80 bg-bg-panel/62 p-4">
               <label className="mb-2 block text-sm text-text-soft">Descrição</label>
               <Textarea
                 onChange={(event) => setForm((current) => ({ ...current, description: event.target.value }))}
@@ -206,7 +206,7 @@ export function TaskComposerModal({
 
           <div className="grid gap-5 md:grid-cols-2">
             {mode === "full" ? (
-              <div className="rounded-[24px] border border-border bg-bg-elevated/86 p-4">
+              <div className="rounded-[22px] border border-border/80 bg-bg-panel/62 p-4">
                 <label className="mb-2 block text-sm text-text-soft">Status</label>
                 <Select
                   onChange={(event) =>
@@ -221,7 +221,7 @@ export function TaskComposerModal({
               </div>
             ) : null}
 
-            <div className="rounded-[24px] border border-border bg-bg-elevated/86 p-4">
+            <div className="rounded-[22px] border border-border/80 bg-bg-panel/62 p-4">
               <label className="mb-2 block text-sm text-text-soft">Duração estimada</label>
               <Input
                 onChange={(event) =>
@@ -244,7 +244,7 @@ export function TaskComposerModal({
             </div>
 
             {mode === "full" ? (
-              <div className="rounded-[24px] border border-border bg-bg-elevated/86 p-4">
+              <div className="rounded-[22px] border border-border/80 bg-bg-panel/62 p-4">
                 <label className="mb-2 block text-sm text-text-soft">Tags</label>
                 <Input
                   onChange={(event) => setForm((current) => ({ ...current, tags: event.target.value }))}
@@ -256,7 +256,7 @@ export function TaskComposerModal({
           </div>
 
           {mode === "full" ? (
-            <div className="rounded-[28px] border border-border bg-bg-elevated/86 p-5">
+            <div className="rounded-[24px] border border-border/80 bg-bg-panel/58 p-5">
               <div className="flex items-center justify-between gap-4">
                 <div>
                   <p className="text-sm font-medium">Lembrete no calendário</p>
@@ -281,7 +281,7 @@ export function TaskComposerModal({
 
               {form.reminderEnabled ? (
                 <div className="mt-5 grid gap-5 md:grid-cols-2">
-                  <div className="rounded-[22px] border border-border bg-bg-panel/86 p-4">
+                    <div className="rounded-[20px] border border-border/75 bg-bg-panel/62 p-4">
                     <label className="mb-2 block text-sm text-text-soft">Recorrência</label>
                     <Select
                       onChange={(event) =>
@@ -295,7 +295,7 @@ export function TaskComposerModal({
                     </Select>
                   </div>
 
-                  <div className="rounded-[22px] border border-border bg-bg-panel/86 p-4">
+                    <div className="rounded-[20px] border border-border/75 bg-bg-panel/62 p-4">
                     <label className="mb-2 block text-sm text-text-soft">Dia do lembrete</label>
                     <Input
                       onChange={(event) =>
@@ -308,7 +308,7 @@ export function TaskComposerModal({
                   </div>
 
                   {form.recurrence === "yearly" ? (
-                    <div className="rounded-[22px] border border-border bg-bg-panel/86 p-4 md:col-span-2">
+                    <div className="rounded-[20px] border border-border/75 bg-bg-panel/62 p-4 md:col-span-2">
                       <label className="mb-2 block text-sm text-text-soft">Mês do lembrete</label>
                       <Input
                         onChange={(event) =>
@@ -326,7 +326,7 @@ export function TaskComposerModal({
           ) : null}
         </div>
 
-        <div className="flex justify-end gap-2 border-t border-border px-6 py-5 md:px-7">
+        <div className="flex justify-end gap-2 border-t border-border/80 px-6 py-5 md:px-7">
           <Button onClick={onClose} variant="ghost">
             Cancelar
           </Button>
