@@ -1,5 +1,5 @@
-import { FinanceOverview } from "@/features/finance/finance-overview";
+import { redirect } from "next/navigation";
 
 export default function FinancePage() {
-  return <FinanceOverview />;
+  redirect("/");
 }

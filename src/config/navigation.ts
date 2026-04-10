@@ -1,14 +1,14 @@
 import {
   CalendarDays,
   CheckSquare2,
-  CircleGauge,
   BellRing,
   FolderKanban,
+  LayoutDashboard,
   Settings
 } from "lucide-react";
 
 export const primaryNavigation = [
-  { href: "/", label: "Hoje", icon: CircleGauge },
+  { href: "/", label: "Dashboard", icon: LayoutDashboard },
   { href: "/tasks", label: "Tarefas", icon: CheckSquare2 },
   { href: "/projects", label: "Projetos", icon: FolderKanban },
   { href: "/events", label: "Eventos", icon: BellRing },

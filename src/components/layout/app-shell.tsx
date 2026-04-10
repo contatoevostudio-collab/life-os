@@ -6,6 +6,7 @@ import Link from "next/link";
 import { primaryNavigation } from "@/config/navigation";
 import { OnboardingModal } from "@/components/layout/onboarding-modal";
 import { PomodoroModal } from "@/features/focus/pomodoro-modal";
+import { TaskComposerModal } from "@/features/tasks/task-composer-modal";
 import { useAppState } from "@/providers/app-state-provider";
 import { formatDurationSeconds } from "@/lib/utils";
 
@@ -16,7 +17,7 @@ import { Topbar } from "./topbar";
 export function AppShell({ children }: PropsWithChildren) {
   const [pomodoroOpen, setPomodoroOpen] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
-  const { activePomodoroSeconds, pomodoroRunning } = useAppState();
+  const { activePomodoroSeconds, pomodoroRunning, taskComposerRequest, closeTaskComposer } = useAppState();
 
   useEffect(() => {
     if (pomodoroRunning && activePomodoroSeconds !== null) {
@@ -67,6 +68,15 @@ export function AppShell({ children }: PropsWithChildren) {
         </div>
       </div>
 
+      {taskComposerRequest ? (
+        <TaskComposerModal
+          defaultDueDate={taskComposerRequest.defaultDueDate}
+          defaultProjectId={taskComposerRequest.defaultProjectId}
+          mode={taskComposerRequest.mode}
+          onClose={closeTaskComposer}
+          open
+        />
+      ) : null}
       <PomodoroModal onClose={() => setPomodoroOpen(false)} open={pomodoroOpen} />
       <OnboardingModal />
     </>

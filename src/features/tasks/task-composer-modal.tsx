@@ -16,6 +16,7 @@ interface TaskComposerModalProps {
   onClose: () => void;
   mode: "quick" | "full";
   defaultProjectId?: string | null;
+  defaultDueDate?: string | null;
 }
 
 const emptyState = {
@@ -32,7 +33,8 @@ export function TaskComposerModal({
   open,
   onClose,
   mode,
-  defaultProjectId = null
+  defaultProjectId = null,
+  defaultDueDate = null
 }: TaskComposerModalProps) {
   const { addTask, projects } = useAppState();
   const { user } = useAuth();
@@ -50,7 +52,7 @@ export function TaskComposerModal({
       ...emptyState,
       projectId: defaultProjectId ?? "none"
     });
-  }, [defaultProjectId, open]);
+  }, [defaultDueDate, defaultProjectId, open]);
 
   if (!open) {
     return null;
@@ -72,6 +74,7 @@ export function TaskComposerModal({
       scheduledStart: null,
       scheduledEnd: null,
       projectId: form.projectId === "none" ? null : form.projectId,
+      dueDate: mode === "full" ? (defaultDueDate ?? (form.dueDate || null)) : null,
       tags:
         mode === "full"
           ? form.tags

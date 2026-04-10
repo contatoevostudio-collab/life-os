@@ -37,6 +37,11 @@ interface AppStateContextValue {
   onboardingOpen: boolean;
   activePomodoroSeconds: number | null;
   pomodoroRunning: boolean;
+  taskComposerRequest: {
+    mode: "quick" | "full";
+    defaultProjectId?: string | null;
+    defaultDueDate?: string | null;
+  } | null;
   toggleTaskStatus: (taskId: string) => void;
   addProject: (project: Omit<Project, "id">) => void;
   updateProject: (projectId: string, patch: Partial<Project>) => void;
@@ -52,6 +57,12 @@ interface AppStateContextValue {
   setSearchQuery: (value: string) => void;
   closeOnboarding: () => void;
   setPomodoroState: (state: { seconds: number | null; running: boolean }) => void;
+  openTaskComposer: (request: {
+    mode: "quick" | "full";
+    defaultProjectId?: string | null;
+    defaultDueDate?: string | null;
+  }) => void;
+  closeTaskComposer: () => void;
 }
 
 const AppStateContext = createContext<AppStateContextValue | null>(null);
@@ -73,6 +84,7 @@ export function AppStateProvider({ children }: PropsWithChildren) {
   const [hydrated, setHydrated] = useState(false);
   const [activePomodoroSeconds, setActivePomodoroSeconds] = useState<number | null>(null);
   const [pomodoroRunning, setPomodoroRunning] = useState(false);
+  const [taskComposerRequest, setTaskComposerRequest] = useState<AppStateContextValue["taskComposerRequest"]>(null);
 
   useEffect(() => {
     const raw = window.localStorage.getItem(STORAGE_KEY);
@@ -139,6 +151,7 @@ export function AppStateProvider({ children }: PropsWithChildren) {
       onboardingOpen,
       activePomodoroSeconds,
       pomodoroRunning,
+      taskComposerRequest,
       toggleTaskStatus(taskId) {
         setTasks((current) =>
           current.map((task) => {
@@ -256,6 +269,12 @@ export function AppStateProvider({ children }: PropsWithChildren) {
       setPomodoroState(state) {
         setActivePomodoroSeconds(state.seconds);
         setPomodoroRunning(state.running);
+      },
+      openTaskComposer(request) {
+        setTaskComposerRequest(request);
+      },
+      closeTaskComposer() {
+        setTaskComposerRequest(null);
       }
     }),
     [
@@ -267,6 +286,7 @@ export function AppStateProvider({ children }: PropsWithChildren) {
       projects,
       searchQuery,
       sessions,
+      taskComposerRequest,
       tasks,
       transactions
     ]

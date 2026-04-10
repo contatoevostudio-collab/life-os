@@ -7,6 +7,7 @@ export interface Database {
           user_id: string;
           name: string;
           color: string;
+          description: string | null;
           created_at: string;
         };
         Insert: {
@@ -14,6 +15,7 @@ export interface Database {
           user_id: string;
           name: string;
           color?: string;
+          description?: string | null;
           created_at?: string;
         };
         Update: Partial<Database["public"]["Tables"]["projects"]["Insert"]>;
