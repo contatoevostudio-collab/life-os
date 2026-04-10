@@ -21,7 +21,6 @@ import type {
   CalendarEvent,
   FinancialTransaction,
   FocusSession,
-  Habit,
   Project,
   Task,
   UserPreferences
@@ -33,7 +32,6 @@ interface AppStateContextValue {
   events: CalendarEvent[];
   sessions: FocusSession[];
   transactions: FinancialTransaction[];
-  habits: Habit[];
   preferences: UserPreferences;
   searchQuery: string;
   onboardingOpen: boolean;
@@ -42,25 +40,22 @@ interface AppStateContextValue {
   toggleTaskStatus: (taskId: string) => void;
   addProject: (project: Omit<Project, "id">) => void;
   addTask: (task: Omit<Task, "id">) => void;
-  duplicateTask: (taskId: string) => void;
   updateTask: (taskId: string, patch: Partial<Task>) => void;
   deleteTask: (taskId: string) => void;
-  reorderTask: (taskId: string, direction: "up" | "down") => void;
-  addSubtask: (taskId: string, title: string) => void;
-  toggleSubtask: (taskId: string, subtaskId: string) => void;
   addEvent: (event: Omit<CalendarEvent, "id">) => void;
-  moveEvent: (eventId: string, nextStart: string, nextEnd: string) => void;
-  resizeEvent: (eventId: string, deltaMinutes: number) => void;
   addTransaction: (transaction: Omit<FinancialTransaction, "id">) => void;
   saveSession: (session: Omit<FocusSession, "id">) => void;
   updatePreferences: (patch: Partial<UserPreferences>) => void;
   setSearchQuery: (value: string) => void;
   closeOnboarding: () => void;
+<<<<<<< HEAD
   togglePriorityTask: (taskId: string) => void;
   toggleHabit: (habitId: string) => void;
   addHabit: (title: string) => void;
   addFinanceCategory: (name: string) => void;
   setPomodoroState: (state: { seconds: number | null; running: boolean }) => void;
+=======
+>>>>>>> parent of 8baacc3 (20 alteracoes)
 }
 
 const AppStateContext = createContext<AppStateContextValue | null>(null);
@@ -77,13 +72,6 @@ export function AppStateProvider({ children }: PropsWithChildren) {
   const [sessions, setSessions] = useState(demoSessions);
   const [transactions, setTransactions] = useState(demoTransactions);
   const [preferences, setPreferences] = useState(demoPreferences);
-  const [habits, setHabits] = useState<Habit[]>(
-    demoPreferences.habitTitles.map((title, index) => ({
-      id: `habit-${index + 1}`,
-      title,
-      completedToday: false
-    }))
-  );
   const [searchQuery, setSearchQuery] = useState("");
   const [onboardingOpen, setOnboardingOpen] = useState(false);
   const [hydrated, setHydrated] = useState(false);
@@ -107,7 +95,6 @@ export function AppStateProvider({ children }: PropsWithChildren) {
         sessions: FocusSession[];
         transactions: FinancialTransaction[];
         preferences: UserPreferences;
-        habits: Habit[];
         onboardingDismissed: boolean;
       }>;
 
@@ -117,14 +104,6 @@ export function AppStateProvider({ children }: PropsWithChildren) {
       setSessions(parsed.sessions ?? demoSessions);
       setTransactions(parsed.transactions ?? demoTransactions);
       setPreferences(parsed.preferences ?? demoPreferences);
-      setHabits(
-        parsed.habits ??
-          (parsed.preferences?.habitTitles ?? demoPreferences.habitTitles).map((title, index) => ({
-            id: `habit-${index + 1}`,
-            title,
-            completedToday: false
-          }))
-      );
       setOnboardingOpen(!parsed.onboardingDismissed);
     } catch {
       setOnboardingOpen(true);
@@ -146,12 +125,11 @@ export function AppStateProvider({ children }: PropsWithChildren) {
         events,
         sessions,
         transactions,
-        habits,
         preferences,
         onboardingDismissed: !onboardingOpen
       })
     );
-  }, [events, habits, hydrated, onboardingOpen, preferences, projects, sessions, tasks, transactions]);
+  }, [events, hydrated, onboardingOpen, preferences, projects, sessions, tasks, transactions]);
 
   const value = useMemo<AppStateContextValue>(
     () => ({
@@ -160,7 +138,6 @@ export function AppStateProvider({ children }: PropsWithChildren) {
       events,
       sessions,
       transactions,
-      habits,
       preferences,
       searchQuery,
       onboardingOpen,
@@ -202,6 +179,7 @@ export function AppStateProvider({ children }: PropsWithChildren) {
         setProjects((current) => [{ ...project, id: uid("project") }, ...current]);
       },
       addTask(task) {
+<<<<<<< HEAD
         setTasks((current) => [
           {
             ...task,
@@ -237,6 +215,9 @@ export function AppStateProvider({ children }: PropsWithChildren) {
             ...current
           ];
         });
+=======
+        setTasks((current) => [{ ...task, id: uid("task") }, ...current]);
+>>>>>>> parent of 8baacc3 (20 alteracoes)
       },
       updateTask(taskId, patch) {
         setTasks((current) =>
@@ -247,69 +228,8 @@ export function AppStateProvider({ children }: PropsWithChildren) {
         setTasks((current) => current.filter((task) => task.id !== taskId));
         setEvents((current) => current.filter((event) => event.taskId !== taskId));
       },
-      reorderTask(taskId, direction) {
-        setTasks((current) => {
-          const index = current.findIndex((task) => task.id === taskId);
-          if (index === -1) return current;
-          const status = current[index].status;
-          const groupIndexes = current
-            .map((task, idx) => ({ task, idx }))
-            .filter(({ task }) => task.status === status);
-          const withinGroup = groupIndexes.findIndex(({ idx }) => idx === index);
-          const swapWith = direction === "up" ? withinGroup - 1 : withinGroup + 1;
-          if (swapWith < 0 || swapWith >= groupIndexes.length) return current;
-          const next = [...current];
-          const a = groupIndexes[withinGroup].idx;
-          const b = groupIndexes[swapWith].idx;
-          [next[a], next[b]] = [next[b], next[a]];
-          return next;
-        });
-      },
-      addSubtask(taskId, title) {
-        setTasks((current) =>
-          current.map((task) =>
-            task.id === taskId
-              ? {
-                  ...task,
-                  subtasks: [...(task.subtasks ?? []), { id: uid("subtask"), title, done: false }]
-                }
-              : task
-          )
-        );
-      },
-      toggleSubtask(taskId, subtaskId) {
-        setTasks((current) =>
-          current.map((task) =>
-            task.id === taskId
-              ? {
-                  ...task,
-                  subtasks: (task.subtasks ?? []).map((subtask) =>
-                    subtask.id === subtaskId ? { ...subtask, done: !subtask.done } : subtask
-                  )
-                }
-              : task
-          )
-        );
-      },
       addEvent(event) {
         setEvents((current) => [{ ...event, id: uid("event") }, ...current]);
-      },
-      moveEvent(eventId, nextStart, nextEnd) {
-        setEvents((current) =>
-          current.map((event) =>
-            event.id === eventId ? { ...event, startsAt: nextStart, endsAt: nextEnd } : event
-          )
-        );
-      },
-      resizeEvent(eventId, deltaMinutes) {
-        setEvents((current) =>
-          current.map((event) => {
-            if (event.id !== eventId) return event;
-            const nextEnd = new Date(new Date(event.endsAt).getTime() + deltaMinutes * 60_000);
-            if (nextEnd <= new Date(event.startsAt)) return event;
-            return { ...event, endsAt: nextEnd.toISOString() };
-          })
-        );
       },
       addTransaction(transaction) {
         setTransactions((current) => [{ ...transaction, id: uid("txn") }, ...current]);
@@ -325,6 +245,7 @@ export function AppStateProvider({ children }: PropsWithChildren) {
       },
       closeOnboarding() {
         setOnboardingOpen(false);
+<<<<<<< HEAD
       },
       togglePriorityTask(taskId) {
         setPreferences((current) => {
@@ -369,6 +290,11 @@ export function AppStateProvider({ children }: PropsWithChildren) {
       tasks,
       transactions
     ]
+=======
+      }
+    }),
+    [events, onboardingOpen, preferences, projects, searchQuery, sessions, tasks, transactions]
+>>>>>>> parent of 8baacc3 (20 alteracoes)
   );
 
   return <AppStateContext.Provider value={value}>{children}</AppStateContext.Provider>;

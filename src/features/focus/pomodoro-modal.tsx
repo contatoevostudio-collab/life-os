@@ -18,7 +18,11 @@ interface PomodoroModalProps {
 }
 
 export function PomodoroModal({ open, onClose }: PomodoroModalProps) {
+<<<<<<< HEAD
   const { tasks, preferences, saveSession, sessions, setPomodoroState } = useAppState();
+=======
+  const { tasks, preferences, saveSession } = useAppState();
+>>>>>>> parent of 8baacc3 (20 alteracoes)
   const { user } = useAuth();
   const [focusMinutes, setFocusMinutes] = useState(preferences.pomodoroFocusMinutes);
   const [breakMinutes, setBreakMinutes] = useState(preferences.pomodoroBreakMinutes);
@@ -58,16 +62,6 @@ export function PomodoroModal({ open, onClose }: PomodoroModalProps) {
         if (current <= 1) {
           window.clearInterval(interval);
           setRunning(false);
-          if (preferences.soundEnabled) {
-            window.navigator.vibrate?.(120);
-          }
-          if (preferences.notificationsEnabled && "Notification" in window) {
-            if (Notification.permission === "granted") {
-              new Notification("Pomodoro concluído", {
-                body: "Hora de pausar, respirar e seguir."
-              });
-            }
-          }
           saveSession({
             userId: user?.id ?? "demo-user",
             taskId: selectedTaskId || null,
@@ -197,20 +191,6 @@ export function PomodoroModal({ open, onClose }: PomodoroModalProps) {
           <p className={focusView ? "mt-2 text-sm text-white/70" : "mt-2 text-sm text-text-soft"}>
             {running ? "Sessão em andamento" : "Pronto para iniciar"}
           </p>
-        </div>
-
-        <div className="space-y-3">
-          <p className="text-sm text-text-soft">Histórico recente</p>
-          <div className="grid gap-2 md:grid-cols-3">
-            {sessions.slice(0, 6).map((session) => (
-              <div className="rounded-[16px] bg-bg-elevated px-4 py-3 text-sm" key={session.id}>
-                <p>{session.durationMinutes} min</p>
-                <p className="text-xs text-text-muted">
-                  {session.endedAt ? new Date(session.endedAt).toLocaleDateString("pt-BR") : "planejada"}
-                </p>
-              </div>
-            ))}
-          </div>
         </div>
 
         <div className="flex flex-wrap gap-3">

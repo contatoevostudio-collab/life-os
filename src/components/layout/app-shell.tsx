@@ -1,14 +1,16 @@
 "use client";
 
-import { useEffect, useState, type PropsWithChildren } from "react";
+import { useState, type PropsWithChildren } from "react";
 import Link from "next/link";
 
-import { CommandPalette } from "@/components/layout/command-palette";
 import { navigation } from "@/config/navigation";
 import { OnboardingModal } from "@/components/layout/onboarding-modal";
 import { PomodoroModal } from "@/features/focus/pomodoro-modal";
+<<<<<<< HEAD
 import { useAppState } from "@/providers/app-state-provider";
 import { formatDurationSeconds } from "@/lib/utils";
+=======
+>>>>>>> parent of 8baacc3 (20 alteracoes)
 
 import { Sidebar } from "./sidebar";
 import { Topbar } from "./topbar";
@@ -16,6 +18,7 @@ import { Topbar } from "./topbar";
 export function AppShell({ children }: PropsWithChildren) {
   const [pomodoroOpen, setPomodoroOpen] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+<<<<<<< HEAD
   const [paletteOpen, setPaletteOpen] = useState(false);
   const { preferences, activePomodoroSeconds, pomodoroRunning } = useAppState();
 
@@ -30,6 +33,8 @@ export function AppShell({ children }: PropsWithChildren) {
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
   }, []);
+=======
+>>>>>>> parent of 8baacc3 (20 alteracoes)
 
   useEffect(() => {
     if (pomodoroRunning && activePomodoroSeconds !== null) {
@@ -42,7 +47,7 @@ export function AppShell({ children }: PropsWithChildren) {
 
   return (
     <>
-      <div className={`min-h-screen p-4 ${preferences.compactMode ? "text-[14px]" : ""}`}>
+      <div className="min-h-screen p-4">
         <div className="mx-auto flex max-w-[1680px] gap-4">
           <Sidebar />
 
@@ -75,11 +80,6 @@ export function AppShell({ children }: PropsWithChildren) {
       </div>
 
       <PomodoroModal onClose={() => setPomodoroOpen(false)} open={pomodoroOpen} />
-      <CommandPalette
-        onClose={() => setPaletteOpen(false)}
-        onOpenPomodoro={() => setPomodoroOpen(true)}
-        open={paletteOpen}
-      />
       <OnboardingModal />
     </>
   );

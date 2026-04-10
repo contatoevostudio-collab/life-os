@@ -23,27 +23,22 @@ export function TasksBoard() {
     projects,
     toggleTaskStatus,
     addTask,
-    duplicateTask,
     updateTask,
     deleteTask,
     addProject,
     searchQuery
   } = useAppState();
-  const { preferences, updatePreferences, togglePriorityTask, addSubtask, toggleSubtask, reorderTask } =
-    useAppState();
   const { user } = useAuth();
   const [view, setView] = useState<ViewMode>("list");
   const [statusFilter, setStatusFilter] = useState<"all" | TaskStatus>("all");
   const [priorityFilter, setPriorityFilter] = useState<"all" | Priority>("all");
   const [projectFilter, setProjectFilter] = useState("all");
-  const [tagFilter, setTagFilter] = useState("all");
   const [quickTitle, setQuickTitle] = useState("");
   const [projectName, setProjectName] = useState("");
-  const [projectColor, setProjectColor] = useState("#4f8a7b");
-  const [subtaskTitle, setSubtaskTitle] = useState("");
   const [editingTaskId, setEditingTaskId] = useState<string | null>(null);
   const [draggingTaskId, setDraggingTaskId] = useState<string | null>(null);
   const [dropTarget, setDropTarget] = useState<TaskStatus | null>(null);
+<<<<<<< HEAD
   const uniqueTags = Array.from(new Set(tasks.flatMap((task) => task.tags)));
   const [clockNow, setClockNow] = useState(Date.now());
 
@@ -51,6 +46,8 @@ export function TasksBoard() {
     const interval = window.setInterval(() => setClockNow(Date.now()), 1000);
     return () => window.clearInterval(interval);
   }, []);
+=======
+>>>>>>> parent of 8baacc3 (20 alteracoes)
 
   const filteredTasks = tasks.filter((task) => {
     const matchesSearch =
@@ -63,9 +60,6 @@ export function TasksBoard() {
     if (statusFilter !== "all" && task.status !== statusFilter) return false;
     if (priorityFilter !== "all" && task.priority !== priorityFilter) return false;
     if (projectFilter !== "all" && task.projectId !== projectFilter) return false;
-    if (tagFilter !== "all" && !task.tags.includes(tagFilter)) return false;
-    if (preferences.savedTaskView === "deep-work" && (task.estimatedMinutes ?? 0) < 50) return false;
-    if (preferences.savedTaskView === "today" && !preferences.priorityTaskIds.includes(task.id)) return false;
     return true;
   });
 
@@ -105,7 +99,7 @@ export function TasksBoard() {
         }
       />
 
-      <Card className="grid gap-4 xl:grid-cols-[1.6fr_repeat(5,1fr)]">
+      <Card className="grid gap-4 xl:grid-cols-[1.6fr_repeat(4,1fr)]">
         <div className="space-y-2">
           <label className="block text-sm text-text-soft">Criação rápida</label>
           <div className="flex gap-2">
@@ -145,18 +139,12 @@ export function TasksBoard() {
               placeholder="Nome do projeto"
               value={projectName}
             />
-            <Input
-              className="w-14 px-1"
-              onChange={(event) => setProjectColor(event.target.value)}
-              type="color"
-              value={projectColor}
-            />
             <Button
               onClick={() => {
                 if (!projectName.trim()) return;
                 addProject({
                   name: projectName,
-                  color: projectColor
+                  color: "#4f8a7b"
                 });
                 setProjectName("");
               }}
@@ -205,44 +193,7 @@ export function TasksBoard() {
             )}
           </Select>
         </div>
-        <div>
-          <label className="mb-2 block text-sm text-text-soft">View salva</label>
-          <Select
-            onChange={(event) =>
-              updatePreferences({
-                savedTaskView: event.target.value as typeof preferences.savedTaskView
-              })
-            }
-            value={preferences.savedTaskView}
-          >
-            <option value="all">Todas</option>
-            <option value="deep-work">Deep work</option>
-            <option value="today">Prioridades</option>
-          </Select>
-        </div>
       </Card>
-
-      {uniqueTags.length ? (
-        <div className="flex flex-wrap gap-2">
-          <button
-            className={`rounded-full px-3 py-1 text-sm ${tagFilter === "all" ? "bg-accent text-white" : "bg-bg-elevated text-text-soft"}`}
-            onClick={() => setTagFilter("all")}
-            type="button"
-          >
-            Todas as tags
-          </button>
-          {uniqueTags.map((tag) => (
-            <button
-              className={`rounded-full px-3 py-1 text-sm ${tagFilter === tag ? "bg-accent text-white" : "bg-bg-elevated text-text-soft"}`}
-              key={tag}
-              onClick={() => setTagFilter(tag)}
-              type="button"
-            >
-              #{tag}
-            </button>
-          ))}
-        </div>
-      ) : null}
 
       {view === "list" ? (
         <div className="grid gap-4 xl:grid-cols-[1.3fr_0.9fr]">
@@ -252,15 +203,6 @@ export function TasksBoard() {
                 <Card className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between" key={task.id}>
                   <div className="space-y-2">
                     <div className="flex flex-wrap items-center gap-2">
-                      {task.projectId ? (
-                        <span
-                          className="inline-flex size-3 rounded-full"
-                          style={{
-                            background:
-                              projects.find((project) => project.id === task.projectId)?.color ?? "#4f8a7b"
-                          }}
-                        />
-                      ) : null}
                       <h3 className="text-lg font-medium">{task.title}</h3>
                       <Badge>{task.priority}</Badge>
                       {task.projectId ? (
@@ -272,28 +214,8 @@ export function TasksBoard() {
                         />
                       ) : null}
                       <Badge className="bg-bg-elevated text-text-soft">{task.status}</Badge>
-                      {task.dueDate && new Date(task.dueDate) < new Date() && task.status !== "done" ? (
-                        <Badge className="bg-danger/12 text-danger">Atrasada</Badge>
-                      ) : null}
-                      {preferences.priorityTaskIds.includes(task.id) ? (
-                        <Badge className="bg-warning/14 text-warning">Top 3</Badge>
-                      ) : null}
                     </div>
                     <p className="text-sm text-text-soft">{task.description ?? "Sem descrição adicional."}</p>
-                    {task.tags.length ? (
-                      <div className="flex flex-wrap gap-2">
-                        {task.tags.map((tag) => (
-                          <button
-                            className="rounded-full bg-bg-elevated px-2 py-1 text-xs text-text-soft"
-                            key={tag}
-                            onClick={() => setTagFilter(tag)}
-                            type="button"
-                          >
-                            #{tag}
-                          </button>
-                        ))}
-                      </div>
-                    ) : null}
                     <p className="text-sm text-text-muted">
                       Prazo {task.dueDate ? formatDate(task.dueDate) : "livre"}
                     </p>
@@ -308,12 +230,6 @@ export function TasksBoard() {
                     ) : null}
                   </div>
                   <div className="flex gap-2">
-                    <Button onClick={() => togglePriorityTask(task.id)} variant="ghost">
-                      Priorizar
-                    </Button>
-                    <Button onClick={() => duplicateTask(task.id)} variant="ghost">
-                      Duplicar
-                    </Button>
                     <Button onClick={() => setEditingTaskId(task.id)} variant="ghost">
                       Editar
                     </Button>
@@ -379,42 +295,6 @@ export function TasksBoard() {
                       placeholder="tags separadas por virgula"
                       value={task.tags.join(", ")}
                     />
-                    <div className="space-y-2 rounded-[18px] border border-border bg-bg-elevated p-3">
-                      <div className="flex items-center justify-between">
-                        <p className="text-sm font-medium">Subtarefas</p>
-                        <span className="text-xs text-text-muted">{task.subtasks?.length ?? 0}</span>
-                      </div>
-                      {task.subtasks?.map((subtask) => (
-                        <button
-                          className="flex w-full items-center gap-2 rounded-[12px] px-2 py-2 text-left text-sm hover:bg-white/40 dark:hover:bg-white/5"
-                          key={subtask.id}
-                          onClick={() => toggleSubtask(task.id, subtask.id)}
-                          type="button"
-                        >
-                          <span>{subtask.done ? "✓" : "○"}</span>
-                          <span className={subtask.done ? "line-through text-text-muted" : ""}>
-                            {subtask.title}
-                          </span>
-                        </button>
-                      ))}
-                      <div className="flex gap-2">
-                        <Input
-                          onChange={(event) => setSubtaskTitle(event.target.value)}
-                          placeholder="Nova subtarefa"
-                          value={subtaskTitle}
-                        />
-                        <Button
-                          onClick={() => {
-                            if (!subtaskTitle.trim()) return;
-                            addSubtask(task.id, subtaskTitle);
-                            setSubtaskTitle("");
-                          }}
-                          variant="secondary"
-                        >
-                          Adicionar
-                        </Button>
-                      </div>
-                    </div>
                     <Select
                       onChange={(event) =>
                         updateTask(task.id, { priority: event.target.value as Priority })
@@ -516,15 +396,6 @@ export function TasksBoard() {
                       }}
                     >
                       <div className="flex items-center gap-2">
-                        {task.projectId ? (
-                          <span
-                            className="inline-flex size-3 rounded-full"
-                            style={{
-                              background:
-                                projects.find((project) => project.id === task.projectId)?.color ?? "#4f8a7b"
-                            }}
-                          />
-                        ) : null}
                         <Badge>{task.priority}</Badge>
                         {task.projectId ? (
                           <ProjectPill
@@ -536,24 +407,9 @@ export function TasksBoard() {
                         ) : null}
                         <span className="text-xs text-text-muted">arraste</span>
                       </div>
-                      <div className="mt-3 flex gap-2">
-                        <button
-                          className="rounded-[10px] bg-white/60 px-2 py-1 text-xs text-text-soft dark:bg-white/5"
-                          onClick={() => reorderTask(task.id, "up")}
-                          type="button"
-                        >
-                          Subir
-                        </button>
-                        <button
-                          className="rounded-[10px] bg-white/60 px-2 py-1 text-xs text-text-soft dark:bg-white/5"
-                          onClick={() => reorderTask(task.id, "down")}
-                          type="button"
-                        >
-                          Descer
-                        </button>
-                      </div>
                       <p className="mt-3 font-medium">{task.title}</p>
                       <p className="mt-2 text-sm text-text-soft">{task.description ?? "Sem descrição"}</p>
+<<<<<<< HEAD
                       {task.status === "in_progress" ? (
                         <p className="mt-2 text-sm font-medium text-accent">
                           {formatDurationSeconds(getTaskElapsedSeconds(task.id))}
@@ -564,6 +420,8 @@ export function TasksBoard() {
                           {task.subtasks.filter((subtask) => subtask.done).length}/{task.subtasks.length} subtarefas
                         </p>
                       ) : null}
+=======
+>>>>>>> parent of 8baacc3 (20 alteracoes)
                     </div>
                   ))
               ) : (

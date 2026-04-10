@@ -30,12 +30,5 @@ export const demoPreferences: UserPreferences = {
   pomodoroFocusMinutes: 25,
   pomodoroBreakMinutes: 5,
   compactMode: false,
-  weekStartsOn: 1,
-  soundEnabled: false,
-  notificationsEnabled: false,
-  todayNote: "",
-  priorityTaskIds: [],
-  financeCategories: ["Trabalho", "Moradia", "Saude", "Lazer"],
-  savedTaskView: "all",
-  habitTitles: ["Agua", "Leitura", "Alongamento"]
+  weekStartsOn: 1
 };
