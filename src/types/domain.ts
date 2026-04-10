@@ -2,7 +2,7 @@ export type Priority = "low" | "medium" | "high";
 export type TaskStatus = "todo" | "in_progress" | "done";
 export type FinanceType = "income" | "expense";
 export type ThemeMode = "light" | "dark" | "system";
-export type CalendarView = "day" | "week" | "month";
+export type CalendarView = "day" | "week" | "month" | "year";
 
 export interface UserProfile {
   id: string;

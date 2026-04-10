@@ -39,6 +39,7 @@ interface AppStateContextValue {
   pomodoroRunning: boolean;
   toggleTaskStatus: (taskId: string) => void;
   addProject: (project: Omit<Project, "id">) => void;
+  updateProject: (projectId: string, patch: Partial<Project>) => void;
   addTask: (task: Omit<Task, "id">) => void;
   updateTask: (taskId: string, patch: Partial<Task>) => void;
   deleteTask: (taskId: string) => void;
@@ -170,6 +171,11 @@ export function AppStateProvider({ children }: PropsWithChildren) {
       },
       addProject(project) {
         setProjects((current) => [{ ...project, id: uid("project") }, ...current]);
+      },
+      updateProject(projectId, patch) {
+        setProjects((current) =>
+          current.map((project) => (project.id === projectId ? { ...project, ...patch } : project))
+        );
       },
       addTask(task) {
         setTasks((current) => [

@@ -30,38 +30,9 @@ export function ProjectsOverview() {
           {projects.map((project) => {
             const projectTasks = tasks.filter((task) => task.projectId === project.id);
             const done = projectTasks.filter((task) => task.status === "done").length;
-            const href = `/projects/${project.id}` as Route;
 
             return (
-              <Card className="space-y-4" key={project.id}>
-                <div className="flex items-start justify-between gap-3">
-                  <div className="space-y-2">
-                    <ProjectPill color={project.color} name={project.name} />
-                    <p className="text-sm text-text-soft">
-                      {projectTasks.length} tarefas no total, {done} concluídas.
-                    </p>
-                  </div>
-                  <Link href={href}>
-                    <Button>Ver kanban</Button>
-                  </Link>
-                </div>
-                <div className="grid gap-3 sm:grid-cols-3">
-                  <div className="rounded-[18px] bg-bg-elevated p-4">
-                    <p className="text-xs uppercase tracking-[0.18em] text-text-muted">A fazer</p>
-                    <p className="mt-2 text-2xl font-semibold">{projectTasks.filter((task) => task.status === "todo").length}</p>
-                  </div>
-                  <div className="rounded-[18px] bg-bg-elevated p-4">
-                    <p className="text-xs uppercase tracking-[0.18em] text-text-muted">Em andamento</p>
-                    <p className="mt-2 text-2xl font-semibold">
-                      {projectTasks.filter((task) => task.status === "in_progress").length}
-                    </p>
-                  </div>
-                  <div className="rounded-[18px] bg-bg-elevated p-4">
-                    <p className="text-xs uppercase tracking-[0.18em] text-text-muted">Concluídas</p>
-                    <p className="mt-2 text-2xl font-semibold">{done}</p>
-                  </div>
-                </div>
-              </Card>
+              <ProjectCard done={done} key={project.id} project={project} projectTasks={projectTasks.length} />
             );
           })}
         </div>
@@ -72,6 +43,80 @@ export function ProjectsOverview() {
         />
       )}
     </div>
+  );
+}
+
+function ProjectCard({
+  project,
+  projectTasks,
+  done
+}: {
+  project: { id: string; name: string; color: string };
+  projectTasks: number;
+  done: number;
+}) {
+  const { updateProject, tasks } = useAppState();
+  const [editing, setEditing] = useState(false);
+  const [name, setName] = useState(project.name);
+  const [color, setColor] = useState(project.color);
+  const href = `/projects/${project.id}` as Route;
+
+  return (
+    <Card className="space-y-4" data-context="project" data-project-id={project.id}>
+      <div className="flex items-start justify-between gap-3">
+        <div className="space-y-2">
+          <ProjectPill color={project.color} name={project.name} />
+          <p className="text-sm text-text-soft">
+            {projectTasks} tarefas no total, {done} concluídas.
+          </p>
+        </div>
+        <div className="flex gap-2">
+          <Button onClick={() => setEditing((current) => !current)} variant="ghost">
+            {editing ? "Fechar" : "Editar"}
+          </Button>
+          <Link href={href}>
+            <Button>Ver kanban</Button>
+          </Link>
+        </div>
+      </div>
+      <div className="grid gap-3 sm:grid-cols-3">
+        <div className="rounded-[18px] bg-bg-elevated p-4">
+          <p className="text-xs uppercase tracking-[0.18em] text-text-muted">A fazer</p>
+          <p className="mt-2 text-2xl font-semibold">{tasks.filter((task) => task.projectId === project.id && task.status === "todo").length}</p>
+        </div>
+        <div className="rounded-[18px] bg-bg-elevated p-4">
+          <p className="text-xs uppercase tracking-[0.18em] text-text-muted">Em andamento</p>
+          <p className="mt-2 text-2xl font-semibold">
+            {tasks.filter((task) => task.projectId === project.id && task.status === "in_progress").length}
+          </p>
+        </div>
+        <div className="rounded-[18px] bg-bg-elevated p-4">
+          <p className="text-xs uppercase tracking-[0.18em] text-text-muted">Concluídas</p>
+          <p className="mt-2 text-2xl font-semibold">{done}</p>
+        </div>
+      </div>
+      {editing ? (
+        <div className="grid gap-3 rounded-[20px] border border-border bg-bg-elevated p-4 md:grid-cols-[1fr_110px_auto]">
+          <Input onChange={(event) => setName(event.target.value)} value={name} />
+          <Input
+            aria-label="Cor do projeto"
+            className="h-11 rounded-[16px] px-2"
+            onChange={(event) => setColor(event.target.value)}
+            type="color"
+            value={color}
+          />
+          <Button
+            onClick={() => {
+              if (!name.trim()) return;
+              updateProject(project.id, { name: name.trim(), color });
+              setEditing(false);
+            }}
+          >
+            Salvar
+          </Button>
+        </div>
+      ) : null}
+    </Card>
   );
 }
 

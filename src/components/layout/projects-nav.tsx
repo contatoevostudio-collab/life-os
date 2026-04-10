@@ -3,7 +3,7 @@
 import type { Route } from "next";
 import Link from "next/link";
 import { ChevronDown, FolderKanban, Plus } from "lucide-react";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 import { ProjectPill } from "@/components/ui/project-pill";
@@ -15,6 +15,7 @@ interface ProjectsNavProps {
 }
 
 export function ProjectsNav({ onNavigate }: ProjectsNavProps) {
+  const router = useRouter();
   const pathname = usePathname();
   const { projects } = useAppState();
   const [open, setOpen] = useState(pathname.startsWith("/projects"));
@@ -29,20 +30,35 @@ export function ProjectsNav({ onNavigate }: ProjectsNavProps) {
 
   return (
     <div className="space-y-2">
-      <button
+      <div
         className={cn(
-          "flex w-full items-center gap-3 rounded-[18px] px-4 py-3 text-left text-sm font-medium transition",
+          "flex items-center rounded-[18px] text-sm font-medium transition",
           rootActive
             ? "bg-accent text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.16)] dark:text-slate-950"
             : "text-text-soft hover:bg-bg-elevated hover:text-text"
         )}
-        onClick={() => setOpen((current) => !current)}
-        type="button"
+        data-context="project"
       >
-        <FolderKanban className="size-4" />
-        <span className="flex-1">Projetos</span>
-        <ChevronDown className={cn("size-4 transition", open ? "rotate-180" : "")} />
-      </button>
+        <button
+          className="flex flex-1 items-center gap-3 px-4 py-3 text-left"
+          onClick={() => {
+            setOpen(true);
+            onNavigate?.();
+            router.push("/projects");
+          }}
+          type="button"
+        >
+          <FolderKanban className="size-4" />
+          <span className="flex-1">Projetos</span>
+        </button>
+        <button
+          className="mr-2 inline-flex size-8 items-center justify-center rounded-[12px] transition hover:bg-black/5 dark:hover:bg-white/10"
+          onClick={() => setOpen((current) => !current)}
+          type="button"
+        >
+          <ChevronDown className={cn("size-4 transition", open ? "rotate-180" : "")} />
+        </button>
+      </div>
 
       {open ? (
         <div className="space-y-2 pl-4">
@@ -70,6 +86,8 @@ export function ProjectsNav({ onNavigate }: ProjectsNavProps) {
                   "flex items-center rounded-[16px] px-3 py-2 transition",
                   active ? "bg-bg-elevated" : "hover:bg-bg-elevated"
                 )}
+                data-context="project"
+                data-project-id={project.id}
                 href={href}
                 key={project.id}
                 onClick={onNavigate}

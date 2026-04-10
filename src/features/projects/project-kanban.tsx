@@ -6,12 +6,11 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
-import { Input } from "@/components/ui/input";
 import { ProjectPill } from "@/components/ui/project-pill";
 import { SectionHeading } from "@/components/ui/section-heading";
+import { TaskComposerModal } from "@/features/tasks/task-composer-modal";
 import { formatDurationSeconds } from "@/lib/utils";
 import { useAppState } from "@/providers/app-state-provider";
-import { useAuth } from "@/providers/auth-provider";
 import type { TaskStatus } from "@/types/domain";
 
 const columns: TaskStatus[] = ["todo", "in_progress", "done"];
@@ -21,12 +20,12 @@ interface ProjectKanbanProps {
 }
 
 export function ProjectKanban({ projectId }: ProjectKanbanProps) {
-  const { user } = useAuth();
-  const { projects, tasks, addTask, updateTask, toggleTaskStatus } = useAppState();
+  const { projects, tasks, updateTask, toggleTaskStatus } = useAppState();
   const [draggingTaskId, setDraggingTaskId] = useState<string | null>(null);
   const [dropTarget, setDropTarget] = useState<TaskStatus | null>(null);
-  const [quickTitle, setQuickTitle] = useState("");
   const [clockNow, setClockNow] = useState(Date.now());
+  const [quickModalOpen, setQuickModalOpen] = useState(false);
+  const [fullModalOpen, setFullModalOpen] = useState(false);
 
   useEffect(() => {
     const interval = window.setInterval(() => setClockNow(Date.now()), 1000);
@@ -77,32 +76,10 @@ export function ProjectKanban({ projectId }: ProjectKanbanProps) {
             {projectTasks.length} tarefas neste projeto.
           </p>
         </div>
-        <div className="flex w-full gap-2 xl:max-w-xl">
-          <Input
-            onChange={(event) => setQuickTitle(event.target.value)}
-            placeholder="Nova tarefa para este projeto"
-            value={quickTitle}
-          />
-          <Button
-            onClick={() => {
-              if (!quickTitle.trim()) return;
-              addTask({
-                userId: user?.id ?? "demo-user",
-                title: quickTitle,
-                description: null,
-                priority: "medium",
-                status: "todo",
-                dueDate: null,
-                estimatedMinutes: 30,
-                scheduledStart: null,
-                scheduledEnd: null,
-                projectId,
-                tags: []
-              });
-              setQuickTitle("");
-            }}
-          >
-            Adicionar
+        <div className="flex w-full flex-wrap gap-2 xl:max-w-xl xl:justify-end">
+          <Button onClick={() => setFullModalOpen(true)}>Adicionar tarefa</Button>
+          <Button onClick={() => setQuickModalOpen(true)} variant="secondary">
+            Tarefa rápida
           </Button>
         </div>
       </Card>
@@ -136,6 +113,8 @@ export function ProjectKanban({ projectId }: ProjectKanbanProps) {
                   .map((task) => (
                     <div
                       className="rounded-[18px] border border-border bg-bg-elevated p-4 transition hover:border-accent"
+                      data-context="task"
+                      data-task-id={task.id}
                       draggable
                       key={task.id}
                       onDragEnd={() => {
@@ -177,6 +156,19 @@ export function ProjectKanban({ projectId }: ProjectKanbanProps) {
           title="Projeto vazio"
         />
       )}
+
+      <TaskComposerModal
+        defaultProjectId={projectId}
+        mode="quick"
+        onClose={() => setQuickModalOpen(false)}
+        open={quickModalOpen}
+      />
+      <TaskComposerModal
+        defaultProjectId={projectId}
+        mode="full"
+        onClose={() => setFullModalOpen(false)}
+        open={fullModalOpen}
+      />
     </div>
   );
 }

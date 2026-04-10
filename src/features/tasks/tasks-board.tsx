@@ -10,9 +10,9 @@ import { Input } from "@/components/ui/input";
 import { ProjectPill } from "@/components/ui/project-pill";
 import { SectionHeading } from "@/components/ui/section-heading";
 import { Select } from "@/components/ui/select";
+import { TaskComposerModal } from "@/features/tasks/task-composer-modal";
 import { formatDate, formatDurationSeconds } from "@/lib/utils";
 import { useAppState } from "@/providers/app-state-provider";
-import { useAuth } from "@/providers/auth-provider";
 import type { Priority, TaskStatus } from "@/types/domain";
 
 type ViewMode = "list" | "kanban";
@@ -22,24 +22,23 @@ export function TasksBoard() {
     tasks,
     projects,
     toggleTaskStatus,
-    addTask,
     updateTask,
     deleteTask,
     addProject,
     searchQuery
   } = useAppState();
-  const { user } = useAuth();
   const [view, setView] = useState<ViewMode>("list");
   const [statusFilter, setStatusFilter] = useState<"all" | TaskStatus>("all");
   const [priorityFilter, setPriorityFilter] = useState<"all" | Priority>("all");
   const [projectFilter, setProjectFilter] = useState("all");
-  const [quickTitle, setQuickTitle] = useState("");
   const [projectName, setProjectName] = useState("");
   const [projectColor, setProjectColor] = useState("#4f8a7b");
   const [editingTaskId, setEditingTaskId] = useState<string | null>(null);
   const [draggingTaskId, setDraggingTaskId] = useState<string | null>(null);
   const [dropTarget, setDropTarget] = useState<TaskStatus | null>(null);
   const [clockNow, setClockNow] = useState(Date.now());
+  const [quickModalOpen, setQuickModalOpen] = useState(false);
+  const [fullModalOpen, setFullModalOpen] = useState(false);
 
   useEffect(() => {
     const interval = window.setInterval(() => setClockNow(Date.now()), 1000);
@@ -98,33 +97,11 @@ export function TasksBoard() {
 
       <Card className="grid gap-4 xl:grid-cols-[1.6fr_repeat(4,1fr)]">
         <div className="space-y-2">
-          <label className="block text-sm text-text-soft">Criação rápida</label>
-          <div className="flex gap-2">
-            <Input
-              onChange={(event) => setQuickTitle(event.target.value)}
-              placeholder="Nova tarefa"
-              value={quickTitle}
-            />
-            <Button
-              onClick={() => {
-                if (!quickTitle.trim()) return;
-                addTask({
-                  userId: user?.id ?? "demo-user",
-                  title: quickTitle,
-                  description: null,
-                  priority: "medium",
-                  status: "todo",
-                  dueDate: null,
-                  estimatedMinutes: 30,
-                  scheduledStart: null,
-                  scheduledEnd: null,
-                  projectId: null,
-                  tags: []
-                });
-                setQuickTitle("");
-              }}
-            >
-              Adicionar
+          <label className="block text-sm text-text-soft">Tarefas</label>
+          <div className="flex flex-wrap gap-2">
+            <Button onClick={() => setFullModalOpen(true)}>Adicionar tarefa</Button>
+            <Button onClick={() => setQuickModalOpen(true)} variant="secondary">
+              Tarefa rápida
             </Button>
           </div>
         </div>
@@ -205,7 +182,12 @@ export function TasksBoard() {
           <div className="grid gap-3">
             {filteredTasks.length ? (
               filteredTasks.map((task) => (
-                <Card className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between" key={task.id}>
+                <Card
+                  className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between"
+                  data-context="task"
+                  data-task-id={task.id}
+                  key={task.id}
+                >
                   <div className="space-y-2">
                     <div className="flex flex-wrap items-center gap-2">
                       <h3 className="text-lg font-medium">{task.title}</h3>
@@ -392,6 +374,8 @@ export function TasksBoard() {
                   .map((task) => (
                     <div
                       className="rounded-[18px] border border-border bg-bg-elevated p-4 transition hover:border-accent"
+                      data-context="task"
+                      data-task-id={task.id}
                       draggable
                       key={task.id}
                       onDragStart={() => setDraggingTaskId(task.id)}
@@ -436,6 +420,9 @@ export function TasksBoard() {
           ))}
         </div>
       )}
+
+      <TaskComposerModal mode="quick" onClose={() => setQuickModalOpen(false)} open={quickModalOpen} />
+      <TaskComposerModal mode="full" onClose={() => setFullModalOpen(false)} open={fullModalOpen} />
     </div>
   );
 }
