@@ -37,6 +37,8 @@ interface AppStateContextValue {
   preferences: UserPreferences;
   searchQuery: string;
   onboardingOpen: boolean;
+  activePomodoroSeconds: number | null;
+  pomodoroRunning: boolean;
   toggleTaskStatus: (taskId: string) => void;
   addProject: (project: Omit<Project, "id">) => void;
   addTask: (task: Omit<Task, "id">) => void;
@@ -58,6 +60,7 @@ interface AppStateContextValue {
   toggleHabit: (habitId: string) => void;
   addHabit: (title: string) => void;
   addFinanceCategory: (name: string) => void;
+  setPomodoroState: (state: { seconds: number | null; running: boolean }) => void;
 }
 
 const AppStateContext = createContext<AppStateContextValue | null>(null);
@@ -84,6 +87,8 @@ export function AppStateProvider({ children }: PropsWithChildren) {
   const [searchQuery, setSearchQuery] = useState("");
   const [onboardingOpen, setOnboardingOpen] = useState(false);
   const [hydrated, setHydrated] = useState(false);
+  const [activePomodoroSeconds, setActivePomodoroSeconds] = useState<number | null>(null);
+  const [pomodoroRunning, setPomodoroRunning] = useState(false);
 
   useEffect(() => {
     const raw = window.localStorage.getItem(STORAGE_KEY);
@@ -159,6 +164,8 @@ export function AppStateProvider({ children }: PropsWithChildren) {
       preferences,
       searchQuery,
       onboardingOpen,
+      activePomodoroSeconds,
+      pomodoroRunning,
       toggleTaskStatus(taskId) {
         setTasks((current) =>
           current.map((task) => {
@@ -166,11 +173,27 @@ export function AppStateProvider({ children }: PropsWithChildren) {
               return task;
             }
 
-            const nextStatus = task.status === "done" ? "todo" : "done";
+            const nextStatus =
+              task.status === "todo"
+                ? "in_progress"
+                : task.status === "in_progress"
+                  ? "done"
+                  : "todo";
+            const now = new Date();
+            const alreadyTracked = task.trackedSeconds ?? 0;
+            const liveTracked =
+              task.status === "in_progress" && task.startedAt
+                ? Math.max(0, Math.floor((now.getTime() - new Date(task.startedAt).getTime()) / 1000))
+                : 0;
             return {
               ...task,
               status: nextStatus,
-              completedAt: nextStatus === "done" ? new Date().toISOString() : null
+              startedAt: nextStatus === "in_progress" ? now.toISOString() : null,
+              trackedSeconds:
+                task.status === "in_progress" && nextStatus !== "in_progress"
+                  ? alreadyTracked + liveTracked
+                  : alreadyTracked,
+              completedAt: nextStatus === "done" ? now.toISOString() : null
             };
           })
         );
@@ -180,7 +203,14 @@ export function AppStateProvider({ children }: PropsWithChildren) {
       },
       addTask(task) {
         setTasks((current) => [
-          { ...task, id: uid("task"), subtasks: task.subtasks ?? [], order: current.length + 1 },
+          {
+            ...task,
+            id: uid("task"),
+            subtasks: task.subtasks ?? [],
+            order: current.length + 1,
+            startedAt: null,
+            trackedSeconds: 0
+          },
           ...current
         ]);
       },
@@ -195,6 +225,8 @@ export function AppStateProvider({ children }: PropsWithChildren) {
               title: `${found.title} (cópia)`,
               status: "todo",
               completedAt: null,
+              startedAt: null,
+              trackedSeconds: 0,
               subtasks: found.subtasks?.map((subtask) => ({
                 ...subtask,
                 id: uid("subtask"),
@@ -318,9 +350,25 @@ export function AppStateProvider({ children }: PropsWithChildren) {
           ...current,
           financeCategories: Array.from(new Set([...current.financeCategories, name]))
         }));
+      },
+      setPomodoroState(state) {
+        setActivePomodoroSeconds(state.seconds);
+        setPomodoroRunning(state.running);
       }
     }),
-    [events, habits, onboardingOpen, preferences, projects, searchQuery, sessions, tasks, transactions]
+    [
+      activePomodoroSeconds,
+      events,
+      habits,
+      onboardingOpen,
+      pomodoroRunning,
+      preferences,
+      projects,
+      searchQuery,
+      sessions,
+      tasks,
+      transactions
+    ]
   );
 
   return <AppStateContext.Provider value={value}>{children}</AppStateContext.Provider>;

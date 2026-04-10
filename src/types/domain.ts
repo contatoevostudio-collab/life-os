@@ -34,6 +34,8 @@ export interface Task {
   completedAt?: string | null;
   subtasks?: TaskSubtask[];
   order?: number;
+  startedAt?: string | null;
+  trackedSeconds?: number;
 }
 
 export interface TaskSubtask {

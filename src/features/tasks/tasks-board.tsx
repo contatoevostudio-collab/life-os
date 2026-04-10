@@ -1,15 +1,16 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Input } from "@/components/ui/input";
+import { ProjectPill } from "@/components/ui/project-pill";
 import { SectionHeading } from "@/components/ui/section-heading";
 import { Select } from "@/components/ui/select";
-import { formatDate } from "@/lib/utils";
+import { formatDate, formatDurationSeconds } from "@/lib/utils";
 import { useAppState } from "@/providers/app-state-provider";
 import { useAuth } from "@/providers/auth-provider";
 import type { Priority, TaskStatus } from "@/types/domain";
@@ -44,6 +45,12 @@ export function TasksBoard() {
   const [draggingTaskId, setDraggingTaskId] = useState<string | null>(null);
   const [dropTarget, setDropTarget] = useState<TaskStatus | null>(null);
   const uniqueTags = Array.from(new Set(tasks.flatMap((task) => task.tags)));
+  const [clockNow, setClockNow] = useState(Date.now());
+
+  useEffect(() => {
+    const interval = window.setInterval(() => setClockNow(Date.now()), 1000);
+    return () => window.clearInterval(interval);
+  }, []);
 
   const filteredTasks = tasks.filter((task) => {
     const matchesSearch =
@@ -63,6 +70,22 @@ export function TasksBoard() {
   });
 
   const columns: TaskStatus[] = ["todo", "in_progress", "done"];
+
+  function getTaskElapsedSeconds(taskId: string) {
+    const task = tasks.find((item) => item.id === taskId);
+    if (!task) return 0;
+    const base = task.trackedSeconds ?? 0;
+    if (task.status !== "in_progress" || !task.startedAt) {
+      return base;
+    }
+    return base + Math.max(0, Math.floor((clockNow - new Date(task.startedAt).getTime()) / 1000));
+  }
+
+  function getAdvanceLabel(status: TaskStatus) {
+    if (status === "todo") return "Iniciar";
+    if (status === "in_progress") return "Concluir";
+    return "Reabrir";
+  }
 
   return (
     <div className="space-y-6">
@@ -240,6 +263,14 @@ export function TasksBoard() {
                       ) : null}
                       <h3 className="text-lg font-medium">{task.title}</h3>
                       <Badge>{task.priority}</Badge>
+                      {task.projectId ? (
+                        <ProjectPill
+                          color={
+                            projects.find((project) => project.id === task.projectId)?.color ?? "#2563eb"
+                          }
+                          name={projects.find((project) => project.id === task.projectId)?.name ?? "Projeto"}
+                        />
+                      ) : null}
                       <Badge className="bg-bg-elevated text-text-soft">{task.status}</Badge>
                       {task.dueDate && new Date(task.dueDate) < new Date() && task.status !== "done" ? (
                         <Badge className="bg-danger/12 text-danger">Atrasada</Badge>
@@ -266,6 +297,15 @@ export function TasksBoard() {
                     <p className="text-sm text-text-muted">
                       Prazo {task.dueDate ? formatDate(task.dueDate) : "livre"}
                     </p>
+                    {task.status === "in_progress" ? (
+                      <p className="text-sm font-medium text-accent">
+                        Cronômetro {formatDurationSeconds(getTaskElapsedSeconds(task.id))}
+                      </p>
+                    ) : task.trackedSeconds ? (
+                      <p className="text-sm text-text-muted">
+                        Tempo total {formatDurationSeconds(task.trackedSeconds)}
+                      </p>
+                    ) : null}
                   </div>
                   <div className="flex gap-2">
                     <Button onClick={() => togglePriorityTask(task.id)} variant="ghost">
@@ -278,7 +318,7 @@ export function TasksBoard() {
                       Editar
                     </Button>
                     <Button onClick={() => toggleTaskStatus(task.id)} variant="secondary">
-                      {task.status === "done" ? "Reabrir" : "Concluir"}
+                      {getAdvanceLabel(task.status)}
                     </Button>
                   </div>
                 </Card>
@@ -486,6 +526,14 @@ export function TasksBoard() {
                           />
                         ) : null}
                         <Badge>{task.priority}</Badge>
+                        {task.projectId ? (
+                          <ProjectPill
+                            color={
+                              projects.find((project) => project.id === task.projectId)?.color ?? "#2563eb"
+                            }
+                            name={projects.find((project) => project.id === task.projectId)?.name ?? "Projeto"}
+                          />
+                        ) : null}
                         <span className="text-xs text-text-muted">arraste</span>
                       </div>
                       <div className="mt-3 flex gap-2">
@@ -506,6 +554,11 @@ export function TasksBoard() {
                       </div>
                       <p className="mt-3 font-medium">{task.title}</p>
                       <p className="mt-2 text-sm text-text-soft">{task.description ?? "Sem descrição"}</p>
+                      {task.status === "in_progress" ? (
+                        <p className="mt-2 text-sm font-medium text-accent">
+                          {formatDurationSeconds(getTaskElapsedSeconds(task.id))}
+                        </p>
+                      ) : null}
                       {task.subtasks?.length ? (
                         <p className="mt-2 text-xs text-text-muted">
                           {task.subtasks.filter((subtask) => subtask.done).length}/{task.subtasks.length} subtarefas

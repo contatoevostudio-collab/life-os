@@ -8,6 +8,7 @@ import { navigation } from "@/config/navigation";
 import { OnboardingModal } from "@/components/layout/onboarding-modal";
 import { PomodoroModal } from "@/features/focus/pomodoro-modal";
 import { useAppState } from "@/providers/app-state-provider";
+import { formatDurationSeconds } from "@/lib/utils";
 
 import { Sidebar } from "./sidebar";
 import { Topbar } from "./topbar";
@@ -16,7 +17,7 @@ export function AppShell({ children }: PropsWithChildren) {
   const [pomodoroOpen, setPomodoroOpen] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [paletteOpen, setPaletteOpen] = useState(false);
-  const { preferences } = useAppState();
+  const { preferences, activePomodoroSeconds, pomodoroRunning } = useAppState();
 
   useEffect(() => {
     function onKeyDown(event: KeyboardEvent) {
@@ -29,6 +30,15 @@ export function AppShell({ children }: PropsWithChildren) {
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
   }, []);
+
+  useEffect(() => {
+    if (pomodoroRunning && activePomodoroSeconds !== null) {
+      document.title = `${formatDurationSeconds(activePomodoroSeconds)} · Life OS`;
+      return;
+    }
+
+    document.title = "Life OS";
+  }, [activePomodoroSeconds, pomodoroRunning]);
 
   return (
     <>

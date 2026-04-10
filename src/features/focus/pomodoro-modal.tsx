@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { useAppState } from "@/providers/app-state-provider";
 import { useAuth } from "@/providers/auth-provider";
+import { formatDurationSeconds } from "@/lib/utils";
 
 interface PomodoroModalProps {
   open: boolean;
@@ -17,7 +18,7 @@ interface PomodoroModalProps {
 }
 
 export function PomodoroModal({ open, onClose }: PomodoroModalProps) {
-  const { tasks, preferences, saveSession, sessions } = useAppState();
+  const { tasks, preferences, saveSession, sessions, setPomodoroState } = useAppState();
   const { user } = useAuth();
   const [focusMinutes, setFocusMinutes] = useState(preferences.pomodoroFocusMinutes);
   const [breakMinutes, setBreakMinutes] = useState(preferences.pomodoroBreakMinutes);
@@ -30,6 +31,22 @@ export function PomodoroModal({ open, onClose }: PomodoroModalProps) {
     setFocusMinutes(preferences.pomodoroFocusMinutes);
     setBreakMinutes(preferences.pomodoroBreakMinutes);
   }, [preferences]);
+
+  useEffect(() => {
+    setPomodoroState({
+      seconds: remainingSeconds,
+      running
+    });
+  }, [remainingSeconds, running, setPomodoroState]);
+
+  useEffect(() => {
+    return () => {
+      setPomodoroState({
+        seconds: null,
+        running: false
+      });
+    };
+  }, [setPomodoroState]);
 
   useEffect(() => {
     if (!running) {
@@ -175,7 +192,7 @@ export function PomodoroModal({ open, onClose }: PomodoroModalProps) {
 
         <div className="rounded-[28px] bg-bg-elevated px-6 py-10 text-center dark:bg-white/5">
           <p className="font-mono text-6xl font-semibold tracking-[-0.08em]">
-            {minutes}:{seconds}
+            {formatDurationSeconds(remainingSeconds)}
           </p>
           <p className={focusView ? "mt-2 text-sm text-white/70" : "mt-2 text-sm text-text-soft"}>
             {running ? "Sessão em andamento" : "Pronto para iniciar"}

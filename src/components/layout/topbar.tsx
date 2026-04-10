@@ -4,6 +4,7 @@ import { Menu, Moon, PlayCircle, Search, Sparkles, Sun, UserCircle2 } from "luci
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { formatDurationSeconds } from "@/lib/utils";
 import { useAppState } from "@/providers/app-state-provider";
 import { useAuth } from "@/providers/auth-provider";
 import { useTheme } from "@/providers/theme-provider";
@@ -16,7 +17,7 @@ interface TopbarProps {
 export function Topbar({ onOpenPomodoro, onOpenMobileNav }: TopbarProps) {
   const { resolvedTheme, setTheme } = useTheme();
   const { user, mode } = useAuth();
-  const { searchQuery, setSearchQuery } = useAppState();
+  const { searchQuery, setSearchQuery, activePomodoroSeconds, pomodoroRunning } = useAppState();
 
   return (
     <header className="glass-panel sticky top-4 z-30 flex min-h-16 flex-col gap-3 rounded-[24px] px-4 py-3 md:px-5 lg:flex-row lg:items-center lg:justify-between">
@@ -55,7 +56,9 @@ export function Topbar({ onOpenPomodoro, onOpenMobileNav }: TopbarProps) {
       <div className="flex w-full items-center justify-end gap-2 lg:w-auto">
         <Button onClick={onOpenPomodoro}>
           <PlayCircle className="size-4" />
-          Pomodoro
+          {pomodoroRunning && activePomodoroSeconds !== null
+            ? formatDurationSeconds(activePomodoroSeconds)
+            : "Pomodoro"}
         </Button>
         <button
           className="inline-flex size-10 items-center justify-center rounded-[14px] border border-border text-text-soft transition hover:bg-bg-elevated"
