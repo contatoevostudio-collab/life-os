@@ -1,0 +1,110 @@
+@import "tailwindcss";
+
+:root {
+  --font-sans: "Manrope", "SF Pro Display", "Segoe UI", sans-serif;
+  --font-mono: "JetBrains Mono", "SF Mono", monospace;
+
+  --radius-sm: 12px;
+  --radius-md: 18px;
+  --radius-lg: 26px;
+
+  --bg: #f6f2ea;
+  --bg-elevated: rgba(255, 252, 247, 0.9);
+  --bg-panel: rgba(255, 250, 243, 0.76);
+  --bg-inverse: #182127;
+  --border: rgba(77, 63, 47, 0.1);
+  --border-strong: rgba(77, 63, 47, 0.16);
+  --text: #1f252b;
+  --text-soft: #626d78;
+  --text-muted: #8b95a1;
+  --accent: #4f8a7b;
+  --accent-soft: rgba(79, 138, 123, 0.14);
+  --success: #4b9b6a;
+  --warning: #d29b47;
+  --danger: #d06e62;
+  --shadow: 0 18px 48px rgba(72, 54, 39, 0.09);
+  --backdrop: saturate(140%) blur(18px);
+}
+
+.dark {
+  --bg: #12181d;
+  --bg-elevated: rgba(24, 32, 38, 0.88);
+  --bg-panel: rgba(24, 32, 38, 0.74);
+  --bg-inverse: #f7f3ec;
+  --border: rgba(230, 221, 209, 0.08);
+  --border-strong: rgba(230, 221, 209, 0.15);
+  --text: #f5f1ea;
+  --text-soft: #c8c0b6;
+  --text-muted: #9f9a93;
+  --accent: #8fd0b3;
+  --accent-soft: rgba(143, 208, 179, 0.14);
+  --success: #7bd59b;
+  --warning: #e4b66a;
+  --danger: #f08d7d;
+  --shadow: 0 18px 48px rgba(0, 0, 0, 0.32);
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-bg-elevated: var(--bg-elevated);
+  --color-bg-panel: var(--bg-panel);
+  --color-border: var(--border);
+  --color-border-strong: var(--border-strong);
+  --color-text: var(--text);
+  --color-text-soft: var(--text-soft);
+  --color-text-muted: var(--text-muted);
+  --color-accent: var(--accent);
+  --color-accent-soft: var(--accent-soft);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-danger: var(--danger);
+  --font-sans: var(--font-sans);
+  --font-mono: var(--font-mono);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  color-scheme: light;
+}
+
+html.dark {
+  color-scheme: dark;
+}
+
+body {
+  min-height: 100vh;
+  background:
+    radial-gradient(circle at top left, rgba(226, 203, 160, 0.2), transparent 28%),
+    radial-gradient(circle at top right, rgba(143, 208, 179, 0.12), transparent 24%),
+    var(--bg);
+  color: var(--text);
+  font-family: var(--font-sans);
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button {
+  cursor: pointer;
+}
+
+::selection {
+  background: var(--accent-soft);
+}
+
+.glass-panel {
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow);
+  backdrop-filter: var(--backdrop);
+}
+
+.scrollbar-subtle {
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-strong) transparent;
+}
