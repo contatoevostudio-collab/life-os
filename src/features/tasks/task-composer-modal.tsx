@@ -86,7 +86,8 @@ export function TaskComposerModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/35 p-4 backdrop-blur-sm">
-      <Card className="w-full max-w-xl space-y-5 rounded-[30px]">
+      <Card className="animate-fade-in w-full max-w-xl space-y-5 overflow-hidden rounded-[30px]">
+        <div className="h-1.5 bg-[linear-gradient(90deg,rgba(37,99,235,1),rgba(96,165,250,0.2))]" />
         <div className="flex items-start justify-between gap-4">
           <div>
             <p className="text-sm text-text-soft">
@@ -95,6 +96,11 @@ export function TaskComposerModal({
             <h3 className="text-2xl font-semibold tracking-[-0.04em]">
               {mode === "quick" ? "Adicionar tarefa" : "Adicionar tarefa detalhada"}
             </h3>
+            <p className="mt-2 text-sm text-text-soft">
+              {mode === "quick"
+                ? "Captura essencial para registrar a tarefa sem interromper o fluxo."
+                : "Mais controles para definir contexto, prazo e ritmo de execução."}
+            </p>
           </div>
           <button
             className="inline-flex size-10 items-center justify-center rounded-[14px] border border-border text-text-soft transition hover:bg-bg-elevated"
@@ -150,7 +156,7 @@ export function TaskComposerModal({
               <div>
                 <label className="mb-2 block text-sm text-text-soft">Descrição</label>
                 <textarea
-                  className="min-h-28 w-full rounded-[14px] border border-border bg-transparent px-3 py-3 text-sm text-text outline-none transition focus:border-accent"
+                  className="min-h-28 w-full rounded-[14px] border border-border bg-bg-elevated/60 px-3 py-3 text-sm text-text outline-none backdrop-blur-sm transition focus:border-accent"
                   onChange={(event) =>
                     setForm((current) => ({ ...current, description: event.target.value }))
                   }

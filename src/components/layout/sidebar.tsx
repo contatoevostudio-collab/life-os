@@ -13,19 +13,21 @@ export function Sidebar() {
 
   return (
     <aside className="glass-panel hidden h-[calc(100vh-2rem)] w-72 shrink-0 flex-col rounded-[28px] p-5 lg:flex">
-      <div className="mb-8 space-y-3">
-        <p className="text-xs font-semibold uppercase tracking-[0.3em] text-text-muted">
-          Life OS
-        </p>
+      <div className="mb-8 space-y-4">
+        <div className="inline-flex items-center gap-2 rounded-full border border-border bg-bg-elevated px-3 py-1 text-xs font-medium text-text-soft">
+          <span className="size-2 rounded-full bg-success" />
+          Espaço ativo
+        </div>
         <div>
-          <h1 className="text-[2rem] font-semibold tracking-[-0.06em]">Workspace</h1>
-          <p className="text-sm text-text-soft">
+          <p className="text-xs font-semibold uppercase tracking-[0.3em] text-text-muted">Life OS</p>
+          <h1 className="mt-2 text-[2rem] font-semibold tracking-[-0.08em]">Workspace</h1>
+          <p className="mt-2 text-sm text-text-soft">
             Um painel pessoal enxuto para operar o seu dia.
           </p>
         </div>
       </div>
 
-      <nav className="space-y-2">
+      <nav className="space-y-3">
         {primaryNavigation.map((item) => {
           if (item.href === "/projects") {
             return <ProjectsNav key={item.href} />;
@@ -52,8 +54,8 @@ export function Sidebar() {
         })}
       </nav>
 
-      <div className="mt-auto rounded-[24px] border border-border bg-bg-elevated p-4">
-        <p className="text-sm font-medium">Workspace sereno</p>
+      <div className="mt-auto rounded-[24px] border border-border bg-[linear-gradient(180deg,rgba(255,255,255,0.34),rgba(255,255,255,0.14))] p-4 dark:bg-[linear-gradient(180deg,rgba(255,255,255,0.06),rgba(255,255,255,0.03))]">
+        <p className="text-sm font-medium tracking-[-0.02em]">Workspace sereno</p>
         <p className="mt-1 text-sm text-text-soft">
           Visual pensado para manter foco e preparar a futura evolução para macOS.
         </p>

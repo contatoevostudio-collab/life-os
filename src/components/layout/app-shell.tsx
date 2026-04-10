@@ -29,7 +29,7 @@ export function AppShell({ children }: PropsWithChildren) {
 
   return (
     <>
-      <div className="min-h-screen p-4">
+      <div className="page-shell min-h-screen p-4 md:p-5">
         <div className="mx-auto flex max-w-[1680px] gap-4">
           <Sidebar />
 
@@ -40,7 +40,7 @@ export function AppShell({ children }: PropsWithChildren) {
             />
 
             {mobileOpen ? (
-              <div className="glass-panel rounded-[24px] p-4 lg:hidden">
+              <div className="glass-panel animate-fade-in rounded-[24px] p-4 lg:hidden">
                 <nav className="grid gap-2">
                   {primaryNavigation.map((item) =>
                     item.href === "/projects" ? (

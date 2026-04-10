@@ -67,6 +67,7 @@ export function ProjectKanban({ projectId }: ProjectKanbanProps) {
         description="Kanban dedicado ao projeto, com fases claras e leitura rápida das tarefas ativas."
         eyebrow="Projeto"
         title={project.name}
+        action={<span className="text-sm text-text-soft">{projectTasks.length} itens no quadro</span>}
       />
 
       <Card className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
@@ -112,7 +113,7 @@ export function ProjectKanban({ projectId }: ProjectKanbanProps) {
                   .filter((task) => task.status === status)
                   .map((task) => (
                     <div
-                      className="rounded-[18px] border border-border bg-bg-elevated p-4 transition hover:border-accent"
+                      className="rounded-[18px] border border-border bg-bg-elevated/70 p-4 transition hover:border-accent"
                       data-context="task"
                       data-task-id={task.id}
                       draggable

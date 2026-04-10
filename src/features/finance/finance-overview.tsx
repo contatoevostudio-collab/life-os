@@ -2,12 +2,13 @@
 
 import { useState } from "react";
 
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Input } from "@/components/ui/input";
 import { SectionHeading } from "@/components/ui/section-heading";
 import { Select } from "@/components/ui/select";
-import { Button } from "@/components/ui/button";
 import { currency, formatDate } from "@/lib/utils";
 import { useAppState } from "@/providers/app-state-provider";
 import { useAuth } from "@/providers/auth-provider";
@@ -41,6 +42,7 @@ export function FinanceOverview() {
         description="Fluxo financeiro direto, sem transformar o módulo em um sistema contábil."
         eyebrow="Módulo"
         title="Financeiro"
+        action={<Badge>{transactions.length} lançamentos</Badge>}
       />
 
       <div className="grid gap-4 xl:grid-cols-[1.3fr_1fr]">
@@ -60,6 +62,7 @@ export function FinanceOverview() {
         </Card>
 
         <Card className="space-y-3">
+          <p className="text-sm text-text-soft">Novo lançamento</p>
           <Select onChange={(event) => setType(event.target.value as "income" | "expense")} value={type}>
             <option value="income">Entrada</option>
             <option value="expense">Saída</option>

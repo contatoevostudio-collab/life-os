@@ -104,8 +104,8 @@ export function PomodoroModal({ open, onClose }: PomodoroModalProps) {
       <Card
         className={
           focusView
-            ? "w-full max-w-3xl space-y-6 rounded-[34px] border-border-strong bg-[linear-gradient(135deg,rgba(22,29,35,0.96),rgba(24,38,34,0.94))] p-10 text-white"
-            : "w-full max-w-xl space-y-6 rounded-[30px]"
+            ? "animate-fade-in w-full max-w-3xl space-y-6 rounded-[34px] border-border-strong bg-[linear-gradient(135deg,rgba(22,29,35,0.96),rgba(24,38,34,0.94))] p-10 text-white"
+            : "animate-fade-in w-full max-w-xl space-y-6 rounded-[30px]"
         }
       >
         <div className="flex items-start justify-between gap-4">
@@ -134,7 +134,7 @@ export function PomodoroModal({ open, onClose }: PomodoroModalProps) {
 
         <div className="grid gap-3 md:grid-cols-2">
           <button
-            className="rounded-[18px] border border-border bg-bg-elevated px-4 py-3 text-left transition hover:border-accent"
+            className="rounded-[18px] border border-border bg-bg-elevated/70 px-4 py-3 text-left transition hover:border-accent"
             onClick={() => {
               setFocusMinutes(25);
               setBreakMinutes(5);
@@ -145,7 +145,7 @@ export function PomodoroModal({ open, onClose }: PomodoroModalProps) {
             <p className="text-sm text-text-soft">Ritmo clássico</p>
           </button>
           <button
-            className="rounded-[18px] border border-border bg-bg-elevated px-4 py-3 text-left transition hover:border-accent"
+            className="rounded-[18px] border border-border bg-bg-elevated/70 px-4 py-3 text-left transition hover:border-accent"
             onClick={() => {
               setFocusMinutes(50);
               setBreakMinutes(10);
@@ -189,7 +189,7 @@ export function PomodoroModal({ open, onClose }: PomodoroModalProps) {
           </div>
         </div>
 
-        <div className="rounded-[28px] bg-bg-elevated px-6 py-10 text-center dark:bg-white/5">
+        <div className="rounded-[28px] bg-[linear-gradient(180deg,rgba(255,255,255,0.34),rgba(255,255,255,0.14))] px-6 py-10 text-center dark:bg-[linear-gradient(180deg,rgba(255,255,255,0.06),rgba(255,255,255,0.03))]">
           <p className="font-mono text-6xl font-semibold tracking-[-0.08em]">
             {formatDurationSeconds(remainingSeconds)}
           </p>

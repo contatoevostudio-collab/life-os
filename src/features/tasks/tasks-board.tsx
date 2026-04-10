@@ -84,13 +84,16 @@ export function TasksBoard() {
         eyebrow="Módulo"
         title="Tarefas"
         action={
-          <div className="flex gap-2">
-            <Button onClick={() => setView("list")} variant={view === "list" ? "primary" : "secondary"}>
-              Lista
-            </Button>
-            <Button onClick={() => setView("kanban")} variant={view === "kanban" ? "primary" : "secondary"}>
-              Kanban
-            </Button>
+          <div className="flex items-center gap-3">
+            <Badge>{filteredTasks.length} visíveis</Badge>
+            <div className="flex gap-2">
+              <Button onClick={() => setView("list")} variant={view === "list" ? "primary" : "secondary"}>
+                Lista
+              </Button>
+              <Button onClick={() => setView("kanban")} variant={view === "kanban" ? "primary" : "secondary"}>
+                Kanban
+              </Button>
+            </div>
           </div>
         }
       />

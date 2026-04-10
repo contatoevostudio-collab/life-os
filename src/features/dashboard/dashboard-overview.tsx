@@ -1,5 +1,7 @@
 "use client";
 
+import { ArrowUpRight, CircleCheckBig, Clock3, Wallet } from "lucide-react";
+
 import { Card } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
 import { SectionHeading } from "@/components/ui/section-heading";
@@ -49,7 +51,8 @@ export function DashboardOverview() {
 
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         {metrics.map((metric) => (
-          <Card key={metric.label}>
+          <Card className="relative overflow-hidden" key={metric.label}>
+            <span className="absolute inset-x-0 top-0 h-1 bg-[linear-gradient(90deg,rgba(37,99,235,1),rgba(96,165,250,0.2))]" />
             <p className="text-sm text-text-soft">{metric.label}</p>
             <p className="mt-2 text-3xl font-semibold tracking-[-0.05em]">{metric.value}</p>
           </Card>
@@ -58,7 +61,10 @@ export function DashboardOverview() {
 
       <div className="grid gap-4 xl:grid-cols-2">
         <Card>
-          <p className="text-sm text-text-soft">Semana</p>
+          <div className="flex items-center justify-between">
+            <p className="text-sm text-text-soft">Semana</p>
+            <ArrowUpRight className="size-4 text-text-muted" />
+          </div>
           {hasData ? (
             <div className="mt-4 grid gap-3">
               {["Seg", "Ter", "Qua", "Qui", "Sex", "Sáb", "Dom"].map((day, index) => (

@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useState } from "react";
 
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Input } from "@/components/ui/input";
@@ -21,6 +22,7 @@ export function ProjectsOverview() {
         description="Crie projetos por aqui e acompanhe cada um em um kanban próprio, com suas tarefas separadas por fase."
         eyebrow="Módulo"
         title="Projetos"
+        action={<Badge>{projects.length} projetos</Badge>}
       />
 
       <CreateProjectCard />
@@ -62,7 +64,11 @@ function ProjectCard({
   const href = `/projects/${project.id}` as Route;
 
   return (
-    <Card className="space-y-4" data-context="project" data-project-id={project.id}>
+    <Card className="space-y-4 overflow-hidden" data-context="project" data-project-id={project.id}>
+      <div
+        className="h-1.5 rounded-full"
+        style={{ background: `linear-gradient(90deg, ${project.color}, transparent)` }}
+      />
       <div className="flex items-start justify-between gap-3">
         <div className="space-y-2">
           <ProjectPill color={project.color} name={project.name} />
@@ -96,7 +102,7 @@ function ProjectCard({
         </div>
       </div>
       {editing ? (
-        <div className="grid gap-3 rounded-[20px] border border-border bg-bg-elevated p-4 md:grid-cols-[1fr_110px_auto]">
+        <div className="grid gap-3 rounded-[20px] border border-border bg-bg-elevated/70 p-4 md:grid-cols-[1fr_110px_auto]">
           <Input onChange={(event) => setName(event.target.value)} value={name} />
           <Input
             aria-label="Cor do projeto"
