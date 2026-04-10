@@ -80,13 +80,13 @@ function statusAccent(status: TaskStatus) {
         <div className="space-y-2">
           <ProjectPill color={project.color} name={project.name} />
           <p className="text-sm text-text-soft">
-            {projectTasks.length} tarefas neste projeto.
+            {projectTasks.length} atividades neste projeto.
           </p>
         </div>
         <div className="flex w-full flex-wrap gap-2 xl:max-w-xl xl:justify-end">
-          <Button onClick={() => setFullModalOpen(true)}>Adicionar tarefa</Button>
+          <Button onClick={() => setFullModalOpen(true)}>Nova atividade</Button>
           <Button onClick={() => setQuickModalOpen(true)} variant="secondary">
-            Tarefa rápida
+            Atividade rápida
           </Button>
         </div>
       </Card>

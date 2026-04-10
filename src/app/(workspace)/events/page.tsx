@@ -1,5 +1,5 @@
-import { EventsOverview } from "@/features/events/events-overview";
+import { redirect } from "next/navigation";
 
 export default function EventsPage() {
-  return <EventsOverview />;
+  redirect("/tasks");
 }

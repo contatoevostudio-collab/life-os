@@ -7,9 +7,10 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
 import { useAppState } from "@/providers/app-state-provider";
 import { useAuth } from "@/providers/auth-provider";
-import type { Priority } from "@/types/domain";
+import type { EventRecurrenceType, Priority, TaskStatus } from "@/types/domain";
 
 interface TaskComposerModalProps {
   open: boolean;
@@ -23,10 +24,15 @@ const emptyState = {
   title: "",
   description: "",
   priority: "medium" as Priority,
+  status: "todo" as TaskStatus,
   dueDate: "",
   estimatedMinutes: "30",
   projectId: "none",
-  tags: ""
+  tags: "",
+  reminderEnabled: false,
+  recurrence: "once" as EventRecurrenceType,
+  recurrenceDayOfMonth: "",
+  recurrenceMonth: ""
 };
 
 export function TaskComposerModal({
@@ -36,11 +42,12 @@ export function TaskComposerModal({
   defaultProjectId = null,
   defaultDueDate = null
 }: TaskComposerModalProps) {
-  const { addTask, projects } = useAppState();
+  const { addTask, addEvent, projects } = useAppState();
   const { user } = useAuth();
   const [form, setForm] = useState({
     ...emptyState,
-    projectId: defaultProjectId ?? "none"
+    projectId: defaultProjectId ?? "none",
+    dueDate: defaultDueDate ?? ""
   });
 
   useEffect(() => {
@@ -50,7 +57,8 @@ export function TaskComposerModal({
 
     setForm({
       ...emptyState,
-      projectId: defaultProjectId ?? "none"
+      projectId: defaultProjectId ?? "none",
+      dueDate: defaultDueDate ?? ""
     });
   }, [defaultDueDate, defaultProjectId, open]);
 
@@ -63,17 +71,17 @@ export function TaskComposerModal({
       return;
     }
 
-    addTask({
+    const task = addTask({
       userId: user?.id ?? "demo-user",
       title: form.title.trim(),
       description: mode === "full" ? form.description.trim() || null : null,
       priority: form.priority,
-      status: "todo",
+      status: mode === "full" ? form.status : "todo",
+      dueDate: form.dueDate || defaultDueDate || null,
       estimatedMinutes: form.estimatedMinutes ? Number(form.estimatedMinutes) : null,
       scheduledStart: null,
       scheduledEnd: null,
       projectId: form.projectId === "none" ? null : form.projectId,
-      dueDate: mode === "full" ? (defaultDueDate ?? (form.dueDate || null)) : null,
       tags:
         mode === "full"
           ? form.tags
@@ -82,6 +90,35 @@ export function TaskComposerModal({
               .filter(Boolean)
           : []
     });
+
+    if (form.reminderEnabled) {
+      const anchorDate = form.dueDate || defaultDueDate || new Date().toISOString().slice(0, 10);
+      const anchor = new Date(`${anchorDate}T09:00:00`);
+
+      addEvent({
+        userId: user?.id ?? "demo-user",
+        taskId: task.id,
+        title: task.title,
+        description: task.description,
+        startsAt: anchor.toISOString(),
+        endsAt: anchor.toISOString(),
+        location: null,
+        isAllDay: true,
+        recurrence:
+          form.recurrence === "once"
+            ? null
+            : form.recurrence === "monthly"
+              ? {
+                  type: "monthly",
+                  dayOfMonth: Number(form.recurrenceDayOfMonth) || anchor.getDate()
+                }
+              : {
+                  type: "yearly",
+                  dayOfMonth: Number(form.recurrenceDayOfMonth) || anchor.getDate(),
+                  month: Number(form.recurrenceMonth) || anchor.getMonth() + 1
+                }
+      });
+    }
 
     onClose();
   }
@@ -93,15 +130,11 @@ export function TaskComposerModal({
         <div className="flex items-start justify-between gap-4">
           <div>
             <p className="text-sm text-text-soft">
-              {mode === "quick" ? "Criação rápida" : "Nova tarefa completa"}
+              {mode === "quick" ? "Criação rápida" : "Nova atividade completa"}
             </p>
-            <h3 className="text-2xl font-semibold tracking-[-0.04em]">
-              {mode === "quick" ? "Adicionar tarefa" : "Adicionar tarefa detalhada"}
-            </h3>
+            <h3 className="text-2xl font-semibold tracking-[-0.04em]">Nova atividade</h3>
             <p className="mt-2 text-sm text-text-soft">
-              {mode === "quick"
-                ? "Captura essencial para registrar a tarefa sem interromper o fluxo."
-                : "Mais controles para definir contexto, prazo e ritmo de execução."}
+              Uma única ação para registrar trabalho, prazo ou um lembrete que também aparece no calendário.
             </p>
           </div>
           <button
@@ -118,10 +151,21 @@ export function TaskComposerModal({
             <label className="mb-2 block text-sm text-text-soft">Título</label>
             <Input
               onChange={(event) => setForm((current) => ({ ...current, title: event.target.value }))}
-              placeholder="Nome da tarefa"
+              placeholder="Nome da atividade"
               value={form.title}
             />
           </div>
+
+          {mode === "full" ? (
+            <div>
+              <label className="mb-2 block text-sm text-text-soft">Descrição</label>
+              <Textarea
+                onChange={(event) => setForm((current) => ({ ...current, description: event.target.value }))}
+                placeholder="Contexto, observações ou próximos passos"
+                value={form.description}
+              />
+            </div>
+          ) : null}
 
           <div className="grid gap-4 md:grid-cols-2">
             <div>
@@ -154,38 +198,43 @@ export function TaskComposerModal({
           </div>
 
           {mode === "full" ? (
-            <>
+            <div className="grid gap-4 md:grid-cols-2">
               <div>
-                <label className="mb-2 block text-sm text-text-soft">Descrição</label>
-                <textarea
-                  className="min-h-28 w-full rounded-[14px] border border-border bg-bg-elevated/60 px-3 py-3 text-sm text-text outline-none backdrop-blur-sm transition focus:border-accent"
+                <label className="mb-2 block text-sm text-text-soft">Status</label>
+                <Select
                   onChange={(event) =>
-                    setForm((current) => ({ ...current, description: event.target.value }))
+                    setForm((current) => ({ ...current, status: event.target.value as TaskStatus }))
                   }
-                  placeholder="Contexto, detalhes e observações"
-                  value={form.description}
+                  value={form.status}
+                >
+                  <option value="todo">A fazer</option>
+                  <option value="in_progress">Em andamento</option>
+                  <option value="done">Concluída</option>
+                </Select>
+              </div>
+              <div>
+                <label className="mb-2 block text-sm text-text-soft">Duração estimada</label>
+                <Input
+                  onChange={(event) =>
+                    setForm((current) => ({ ...current, estimatedMinutes: event.target.value }))
+                  }
+                  type="number"
+                  value={form.estimatedMinutes}
                 />
               </div>
-              <div className="grid gap-4 md:grid-cols-2">
-                <div>
-                  <label className="mb-2 block text-sm text-text-soft">Prazo</label>
-                  <Input
-                    onChange={(event) => setForm((current) => ({ ...current, dueDate: event.target.value }))}
-                    type="date"
-                    value={form.dueDate}
-                  />
-                </div>
-                <div>
-                  <label className="mb-2 block text-sm text-text-soft">Duração estimada</label>
-                  <Input
-                    onChange={(event) =>
-                      setForm((current) => ({ ...current, estimatedMinutes: event.target.value }))
-                    }
-                    type="number"
-                    value={form.estimatedMinutes}
-                  />
-                </div>
-              </div>
+            </div>
+          ) : null}
+
+          <div className="grid gap-4 md:grid-cols-2">
+            <div>
+              <label className="mb-2 block text-sm text-text-soft">Prazo</label>
+              <Input
+                onChange={(event) => setForm((current) => ({ ...current, dueDate: event.target.value }))}
+                type="date"
+                value={form.dueDate}
+              />
+            </div>
+            {mode === "full" ? (
               <div>
                 <label className="mb-2 block text-sm text-text-soft">Tags</label>
                 <Input
@@ -194,26 +243,83 @@ export function TaskComposerModal({
                   value={form.tags}
                 />
               </div>
-            </>
-          ) : (
-            <div>
-              <label className="mb-2 block text-sm text-text-soft">Duração estimada</label>
-              <Input
-                onChange={(event) =>
-                  setForm((current) => ({ ...current, estimatedMinutes: event.target.value }))
-                }
-                type="number"
-                value={form.estimatedMinutes}
-              />
+            ) : null}
+          </div>
+
+          {mode === "full" ? (
+            <div className="rounded-[22px] border border-border bg-bg-elevated/70 p-4">
+              <div className="flex items-center justify-between gap-3">
+                <div>
+                  <p className="text-sm font-medium">Calendário</p>
+                  <p className="text-sm text-text-soft">
+                    Opcional: transformar essa atividade em lembrete recorrente.
+                  </p>
+                </div>
+                <button
+                  className={`inline-flex h-10 items-center rounded-full px-4 text-sm transition ${
+                    form.reminderEnabled
+                      ? "bg-accent text-white dark:text-slate-950"
+                      : "border border-border bg-bg-panel text-text-soft"
+                  }`}
+                  onClick={() =>
+                    setForm((current) => ({ ...current, reminderEnabled: !current.reminderEnabled }))
+                  }
+                  type="button"
+                >
+                  {form.reminderEnabled ? "Lembrete ligado" : "Ligar lembrete"}
+                </button>
+              </div>
+
+              {form.reminderEnabled ? (
+                <div className="mt-4 grid gap-4 md:grid-cols-2">
+                  <div>
+                    <label className="mb-2 block text-sm text-text-soft">Recorrência</label>
+                    <Select
+                      onChange={(event) =>
+                        setForm((current) => ({ ...current, recurrence: event.target.value as EventRecurrenceType }))
+                      }
+                      value={form.recurrence}
+                    >
+                      <option value="once">Uma vez</option>
+                      <option value="monthly">Todo mês</option>
+                      <option value="yearly">Todo ano</option>
+                    </Select>
+                  </div>
+                  <div>
+                    <label className="mb-2 block text-sm text-text-soft">Dia do lembrete</label>
+                    <Input
+                      onChange={(event) =>
+                        setForm((current) => ({ ...current, recurrenceDayOfMonth: event.target.value }))
+                      }
+                      placeholder="15"
+                      type="number"
+                      value={form.recurrenceDayOfMonth}
+                    />
+                  </div>
+                  {form.recurrence === "yearly" ? (
+                    <div className="md:col-span-2">
+                      <label className="mb-2 block text-sm text-text-soft">Mês do lembrete</label>
+                      <Input
+                        onChange={(event) =>
+                          setForm((current) => ({ ...current, recurrenceMonth: event.target.value }))
+                        }
+                        placeholder="10"
+                        type="number"
+                        value={form.recurrenceMonth}
+                      />
+                    </div>
+                  ) : null}
+                </div>
+              ) : null}
             </div>
-          )}
+          ) : null}
         </div>
 
         <div className="flex justify-end gap-2">
           <Button onClick={onClose} variant="ghost">
             Cancelar
           </Button>
-          <Button onClick={submit}>{mode === "quick" ? "Criar rápido" : "Criar tarefa"}</Button>
+          <Button onClick={submit}>{mode === "quick" ? "Criar rápido" : "Salvar atividade"}</Button>
         </div>
       </Card>
     </div>

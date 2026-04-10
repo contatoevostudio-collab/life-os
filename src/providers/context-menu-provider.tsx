@@ -97,7 +97,7 @@ export function ContextMenuProvider({ children }: PropsWithChildren) {
             }))
           });
           items.push({
-            label: "Abrir em Tarefas",
+            label: "Abrir em Atividades",
             action: () => router.push("/tasks")
           });
           items.push({
@@ -128,7 +128,7 @@ export function ContextMenuProvider({ children }: PropsWithChildren) {
         const calendarDate = element.dataset.calendarDate;
 
         items.push({
-          label: "Criar tarefa",
+          label: "Criar atividade",
           action: () =>
             openTaskComposer({
               mode: "full",

@@ -1,46 +1,76 @@
 "use client";
 
-import { ArrowUpRight, CircleCheckBig, Clock3, Sparkles } from "lucide-react";
+import { ArrowUpRight, CircleCheckBig, Sparkles } from "lucide-react";
 
 import { Card } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
 import { SectionHeading } from "@/components/ui/section-heading";
-import { formatHours } from "@/lib/utils";
 import { useAppState } from "@/providers/app-state-provider";
 
+function startOfWeek(date: Date) {
+  const next = new Date(date);
+  const offset = (next.getDay() + 6) % 7;
+  next.setDate(next.getDate() - offset);
+  next.setHours(0, 0, 0, 0);
+  return next;
+}
+
+function addDays(date: Date, amount: number) {
+  const next = new Date(date);
+  next.setDate(next.getDate() + amount);
+  return next;
+}
+
+function sameDay(a: Date, b: Date) {
+  return (
+    a.getFullYear() === b.getFullYear() &&
+    a.getMonth() === b.getMonth() &&
+    a.getDate() === b.getDate()
+  );
+}
+
 export function DashboardOverview() {
-  const { tasks, events, sessions, searchQuery } = useAppState();
+  const { tasks, sessions, searchQuery } = useAppState();
   const visibleTasks = tasks.filter(
     (task) =>
       !searchQuery.trim() ||
       task.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       task.description?.toLowerCase().includes(searchQuery.toLowerCase())
   );
+
   const completed = visibleTasks.filter((task) => task.status === "done").length;
-  const pending = visibleTasks.filter((task) => task.status !== "done").length;
+  const pending = visibleTasks.filter((task) => task.status === "todo").length;
   const inProgress = visibleTasks.filter((task) => task.status === "in_progress").length;
-  const eventsCount = events.filter(
-    (event) =>
-      !searchQuery.trim() ||
-      event.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      event.description?.toLowerCase().includes(searchQuery.toLowerCase())
-  ).length;
   const focusMinutes = sessions
     .filter((session) => session.status === "completed")
     .reduce((total, session) => total + session.durationMinutes, 0);
-  const hasData = visibleTasks.length > 0 || sessions.length > 0 || eventsCount > 0;
+
+  const hasData = visibleTasks.length > 0 || sessions.length > 0;
+  const weekStart = startOfWeek(new Date());
+  const weekDates = Array.from({ length: 7 }, (_, index) => addDays(weekStart, index));
 
   const metrics = [
-    { label: "Concluídas", value: String(completed) },
-    { label: "Em andamento", value: String(inProgress) },
-    { label: "Pendentes", value: String(pending) },
-    { label: "Eventos", value: String(eventsCount) }
+    { label: "Pendentes", value: String(pending), accent: "bg-[#fee2e2] dark:bg-[#3a1818]" },
+    { label: "Em andamento", value: String(inProgress), accent: "bg-[#fef3c7] dark:bg-[#3b2f13]" },
+    { label: "Concluídas", value: String(completed), accent: "bg-[#dcfce7] dark:bg-[#163625]" },
+    { label: "Foco", value: `${focusMinutes}m`, accent: "bg-bg-elevated" }
   ];
+
+  const weekStats = weekDates.map((day) => {
+    const dayTasks = visibleTasks.filter((task) => task.dueDate && sameDay(new Date(task.dueDate), day));
+
+    return {
+      day,
+      todo: dayTasks.filter((task) => task.status === "todo").length,
+      inProgress: dayTasks.filter((task) => task.status === "in_progress").length,
+      done: dayTasks.filter((task) => task.status === "done").length
+    };
+  });
 
   return (
     <div className="space-y-6">
       <SectionHeading
-        description="Visão semanal e mensal orientada a decisão, com poucos números e leitura rápida."
+        description="Resumo claro do andamento real das atividades, com leitura semanal e métricas objetivas."
         eyebrow="Módulo"
         title="Dashboard"
       />
@@ -48,7 +78,7 @@ export function DashboardOverview() {
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         {metrics.map((metric) => (
           <Card className="relative overflow-hidden border border-border bg-bg-elevated/80" key={metric.label}>
-            <span className="absolute inset-x-0 top-0 h-1 bg-[linear-gradient(90deg,rgba(37,99,235,1),rgba(96,165,250,0.2))]" />
+            <span className={`absolute inset-x-0 top-0 h-1 ${metric.accent}`} />
             <p className="text-sm text-text-soft">{metric.label}</p>
             <p className="mt-2 text-3xl font-semibold tracking-[-0.05em]">{metric.value}</p>
           </Card>
@@ -63,22 +93,30 @@ export function DashboardOverview() {
           </div>
           {hasData ? (
             <div className="mt-4 grid gap-3">
-              {["Seg", "Ter", "Qua", "Qui", "Sex", "Sáb", "Dom"].map((day, index) => (
-                <div className="flex items-center gap-3" key={day}>
-                  <span className="w-10 text-sm text-text-muted">{day}</span>
-                  <div className="h-3 flex-1 rounded-full bg-bg-elevated">
-                    <div
-                      className="h-3 rounded-full bg-[linear-gradient(90deg,rgba(37,99,235,1),rgba(96,165,250,0.7))]"
-                      style={{ width: `${12 + index * 8}%` }}
-                    />
+              {weekStats.map((item) => {
+                const total = item.todo + item.inProgress + item.done || 1;
+                const todoWidth = (item.todo / total) * 100;
+                const inProgressWidth = (item.inProgress / total) * 100;
+                const doneWidth = (item.done / total) * 100;
+
+                return (
+                  <div className="flex items-center gap-3" key={item.day.toISOString()}>
+                    <span className="w-10 text-sm text-text-muted">
+                      {new Intl.DateTimeFormat("pt-BR", { weekday: "short" }).format(item.day).replace(".", "")}
+                    </span>
+                    <div className="flex h-3 flex-1 overflow-hidden rounded-full bg-bg-elevated">
+                      <div className="bg-[#fecaca] dark:bg-[#5a2626]" style={{ width: `${todoWidth}%` }} />
+                      <div className="bg-[#fcd34d] dark:bg-[#6a5420]" style={{ width: `${inProgressWidth}%` }} />
+                      <div className="bg-[#86efac] dark:bg-[#25553a]" style={{ width: `${doneWidth}%` }} />
+                    </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           ) : (
             <div className="mt-4">
               <EmptyState
-                description="O dashboard começa a ganhar sinal assim que você cria tarefas, eventos, foco ou lançamentos."
+                description="O dashboard começa a ganhar sinal assim que você cria atividades e move seus status."
                 title="Sem métricas ainda"
               />
             </div>
@@ -87,13 +125,22 @@ export function DashboardOverview() {
 
         <Card>
           <div className="flex items-center justify-between">
-            <p className="text-sm text-text-soft">Leitura do período</p>
+            <p className="text-sm text-text-soft">Leitura da operação</p>
             <Sparkles className="size-4 text-accent" />
           </div>
           <div className="mt-4 space-y-3 text-sm text-text-soft">
-            <p>O dashboard mostra status, eventos e foco no mesmo lugar para decisão rápida.</p>
-            <p>Os gráficos são discretos e servem como leitura do ritmo, não como enfeite.</p>
-            <p>Quanto mais tarefas você mover de estado, mais o painel fica útil no dia a dia.</p>
+            <p>O dashboard mostra o que está pendente, em andamento e concluído no mesmo lugar.</p>
+            <p>Os blocos de semana agora respeitam o status real das atividades do período.</p>
+            <p>Quanto mais você mover atividades entre estados, mais útil fica a leitura do painel.</p>
+            <div className="rounded-[20px] border border-border bg-bg-elevated/70 p-4">
+              <div className="flex items-center gap-2 text-text">
+                <CircleCheckBig className="size-4 text-accent" />
+                <p className="font-medium">Resumo rápido</p>
+              </div>
+              <p className="mt-2 text-sm text-text-soft">
+                Use este painel como sua central de decisão diária, sem finanças e sem ruído desnecessário.
+              </p>
+            </div>
           </div>
         </Card>
       </div>

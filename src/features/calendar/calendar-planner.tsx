@@ -11,7 +11,7 @@ import { ProjectPill } from "@/components/ui/project-pill";
 import { SectionHeading } from "@/components/ui/section-heading";
 import { Select } from "@/components/ui/select";
 import { eventOccursOn, formatEventRecurrence } from "@/lib/event-utils";
-import { currency, formatDateTime } from "@/lib/utils";
+import { formatDateTime } from "@/lib/utils";
 import { useAppState } from "@/providers/app-state-provider";
 import { useAuth } from "@/providers/auth-provider";
 import type { CalendarView } from "@/types/domain";
@@ -100,7 +100,7 @@ function eventToneClass() {
 }
 
 export function CalendarPlanner() {
-  const { events, tasks, transactions, addEvent, searchQuery, projects } = useAppState();
+  const { events, tasks, addEvent, searchQuery, projects } = useAppState();
   const { user } = useAuth();
   const [view, setView] = useState<CalendarView>("month");
   const [title, setTitle] = useState("");
@@ -135,20 +135,12 @@ export function CalendarPlanner() {
   );
 
   const selectedTasks = tasks.filter((task) => task.dueDate && sameDay(new Date(task.dueDate), selectedDate));
-  const selectedTransactions = transactions.filter((transaction) =>
-    sameDay(new Date(transaction.date), selectedDate)
-  );
   const selectedEvents = visibleEvents.filter((event) => eventOccursOn(event, selectedDate));
-  const selectedBalance = selectedTransactions.reduce(
-    (total, item) => total + (item.type === "income" ? item.amount : -item.amount),
-    0
-  );
 
   function itemsForDay(day: Date) {
     return {
       events: visibleEvents.filter((event) => eventOccursOn(event, day)),
-      tasks: tasks.filter((task) => task.dueDate && sameDay(new Date(task.dueDate), day)),
-      transactions: transactions.filter((transaction) => sameDay(new Date(transaction.date), day))
+      tasks: tasks.filter((task) => task.dueDate && sameDay(new Date(task.dueDate), day))
     };
   }
 
@@ -288,14 +280,6 @@ export function CalendarPlanner() {
                             {task.title}
                           </div>
                         ))}
-                        {dayItems.transactions.slice(0, 2).map((transaction) => (
-                          <div
-                            className="truncate rounded-full bg-[#f2e4ff] px-2.5 py-1 text-[11px] text-[#69418f] dark:bg-[#372447] dark:text-[#f0dcff]"
-                            key={transaction.id}
-                          >
-                            {transaction.category}
-                          </div>
-                        ))}
                       </div>
                     </button>
                   );
@@ -337,11 +321,6 @@ export function CalendarPlanner() {
                           {task.title}
                         </div>
                       ))}
-                      {dayItems.transactions.map((transaction) => (
-                        <div className="rounded-[16px] bg-[#f2e4ff] px-3 py-2 text-xs text-[#69418f] dark:bg-[#372447] dark:text-[#f0dcff]" key={transaction.id}>
-                          {transaction.category}
-                        </div>
-                      ))}
                     </div>
                   </button>
                 );
@@ -363,7 +342,7 @@ export function CalendarPlanner() {
               </div>
               <div className="grid gap-4 md:grid-cols-3">
                 <Card className="space-y-3 bg-bg-elevated">
-                  <p className="text-sm text-text-soft">Eventos</p>
+                  <p className="text-sm text-text-soft">Lembretes</p>
                   {itemsForDay(cursorDate).events.length ? (
                     itemsForDay(cursorDate).events.map((event) => (
                       <div className="rounded-[16px] border border-border bg-bg-panel p-3" key={event.id}>
@@ -373,9 +352,7 @@ export function CalendarPlanner() {
                         </p>
                       </div>
                     ))
-                  ) : (
-                    <EmptyState description="Sem eventos neste dia." title="Agenda vazia" />
-                  )}
+                  ) : <EmptyState description="Sem lembretes neste dia." title="Agenda vazia" />}
                 </Card>
                 <Card className="space-y-3 bg-bg-elevated">
                   <p className="text-sm text-text-soft">Tarefas</p>
@@ -388,19 +365,6 @@ export function CalendarPlanner() {
                     ))
                   ) : (
                     <EmptyState description="Sem tarefas neste dia." title="Sem tarefas" />
-                  )}
-                </Card>
-                <Card className="space-y-3 bg-bg-elevated">
-                  <p className="text-sm text-text-soft">Financeiro</p>
-                  {itemsForDay(cursorDate).transactions.length ? (
-                    itemsForDay(cursorDate).transactions.map((transaction) => (
-                      <div className="rounded-[16px] bg-bg-panel p-3" key={transaction.id}>
-                        <p className="font-medium">{transaction.category}</p>
-                        <p className="mt-1 text-sm text-text-soft">{currency(transaction.amount)}</p>
-                      </div>
-                    ))
-                  ) : (
-                    <EmptyState description="Sem movimentações neste dia." title="Financeiro vazio" />
                   )}
                 </Card>
               </div>
@@ -462,19 +426,15 @@ export function CalendarPlanner() {
                 <p className="mt-2 text-3xl font-semibold tracking-[-0.05em]">{selectedTasks.length}</p>
               </div>
               <div className="rounded-[20px] bg-bg-elevated p-4">
-                <p className="text-xs uppercase tracking-[0.2em] text-text-muted">Eventos</p>
+                <p className="text-xs uppercase tracking-[0.2em] text-text-muted">Lembretes</p>
                 <p className="mt-2 text-3xl font-semibold tracking-[-0.05em]">{selectedEvents.length}</p>
-              </div>
-              <div className="rounded-[20px] bg-bg-elevated p-4">
-                <p className="text-xs uppercase tracking-[0.2em] text-text-muted">Financeiro</p>
-                <p className="mt-2 text-3xl font-semibold tracking-[-0.05em]">{currency(selectedBalance)}</p>
               </div>
             </div>
           </Card>
 
           <Card className="space-y-4">
-            <p className="text-sm text-text-soft">Agenda e tarefas</p>
-            {selectedEvents.length || selectedTasks.length || selectedTransactions.length ? (
+            <p className="text-sm text-text-soft">Agenda de atividades</p>
+            {selectedEvents.length || selectedTasks.length ? (
               <div className="space-y-3">
                 {selectedEvents.map((event) => (
                   <div className="rounded-[18px] bg-bg-elevated p-4" key={event.id}>
@@ -496,22 +456,14 @@ export function CalendarPlanner() {
                     <p className="mt-1 text-sm text-text-soft">{task.description ?? "Prazo do dia"}</p>
                   </div>
                 ))}
-                {selectedTransactions.map((transaction) => (
-                  <div className="rounded-[18px] bg-bg-elevated p-4" key={transaction.id}>
-                    <p className="font-medium">{transaction.category}</p>
-                    <p className="mt-1 text-sm text-text-soft">
-                      {transaction.type === "income" ? "Entrada" : "Saída"} de {currency(transaction.amount)}
-                    </p>
-                  </div>
-                ))}
               </div>
             ) : (
-              <EmptyState description="Selecione um dia com itens ou crie eventos para começar." title="Dia sem itens" />
+              <EmptyState description="Selecione um dia com itens ou crie atividades para começar." title="Dia sem itens" />
             )}
           </Card>
 
           <Card className="space-y-4">
-            <p className="text-sm text-text-soft">Novo evento</p>
+            <p className="text-sm text-text-soft">Nova atividade no calendário</p>
             <Input onChange={(event) => setTitle(event.target.value)} placeholder="Título" value={title} />
             <Input onChange={(event) => setStartsAt(event.target.value)} type="datetime-local" value={startsAt} />
             <Input onChange={(event) => setEndsAt(event.target.value)} type="datetime-local" value={endsAt} />
@@ -539,7 +491,7 @@ export function CalendarPlanner() {
                 setTitle("");
               }}
             >
-              Salvar evento
+              Salvar atividade
             </Button>
           </Card>
         </div>

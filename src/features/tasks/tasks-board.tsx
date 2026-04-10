@@ -80,9 +80,9 @@ export function TasksBoard() {
   return (
     <div className="space-y-6">
       <SectionHeading
-        description="Tarefas independentes do calendário, com filtros rápidos e visualização em lista ou kanban."
+        description="Atividades com fluxo único: criação rápida, detalhes completos e visualização em lista ou kanban."
         eyebrow="Módulo"
-        title="Tarefas"
+        title="Atividades"
         action={
           <div className="flex items-center gap-3">
             <Badge>{filteredTasks.length} visíveis</Badge>
@@ -100,11 +100,11 @@ export function TasksBoard() {
 
       <Card className="grid gap-4 xl:grid-cols-[1.6fr_repeat(4,1fr)]">
         <div className="space-y-2">
-          <label className="block text-sm text-text-soft">Tarefas</label>
+          <label className="block text-sm text-text-soft">Atividades</label>
           <div className="flex flex-wrap gap-2">
-            <Button onClick={() => setFullModalOpen(true)}>Adicionar tarefa</Button>
+            <Button onClick={() => setFullModalOpen(true)}>Nova atividade</Button>
             <Button onClick={() => setQuickModalOpen(true)} variant="secondary">
-              Tarefa rápida
+              Atividade rápida
             </Button>
           </div>
         </div>

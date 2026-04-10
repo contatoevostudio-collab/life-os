@@ -45,10 +45,10 @@ interface AppStateContextValue {
   toggleTaskStatus: (taskId: string) => void;
   addProject: (project: Omit<Project, "id">) => void;
   updateProject: (projectId: string, patch: Partial<Project>) => void;
-  addTask: (task: Omit<Task, "id">) => void;
+  addTask: (task: Omit<Task, "id">) => Task;
   updateTask: (taskId: string, patch: Partial<Task>) => void;
   deleteTask: (taskId: string) => void;
-  addEvent: (event: Omit<CalendarEvent, "id">) => void;
+  addEvent: (event: Omit<CalendarEvent, "id">) => CalendarEvent;
   updateEvent: (eventId: string, patch: Partial<CalendarEvent>) => void;
   deleteEvent: (eventId: string) => void;
   addTransaction: (transaction: Omit<FinancialTransaction, "id">) => void;
@@ -193,17 +193,17 @@ export function AppStateProvider({ children }: PropsWithChildren) {
         );
       },
       addTask(task) {
-        setTasks((current) => [
-          {
-            ...task,
-            id: uid("task"),
-            subtasks: task.subtasks ?? [],
-            order: current.length + 1,
-            startedAt: null,
-            trackedSeconds: 0
-          },
-          ...current
-        ]);
+        const nextTask: Task = {
+          ...task,
+          id: uid("task"),
+          subtasks: task.subtasks ?? [],
+          order: tasks.length + 1,
+          startedAt: null,
+          trackedSeconds: 0
+        };
+
+        setTasks((current) => [nextTask, ...current]);
+        return nextTask;
       },
       updateTask(taskId, patch) {
         setTasks((current) =>
@@ -241,7 +241,14 @@ export function AppStateProvider({ children }: PropsWithChildren) {
         setEvents((current) => current.filter((event) => event.taskId !== taskId));
       },
       addEvent(event) {
-        setEvents((current) => [{ ...event, recurrence: event.recurrence ?? null, id: uid("event") }, ...current]);
+        const nextEvent: CalendarEvent = {
+          ...event,
+          recurrence: event.recurrence ?? null,
+          id: uid("event")
+        };
+
+        setEvents((current) => [nextEvent, ...current]);
+        return nextEvent;
       },
       updateEvent(eventId, patch) {
         setEvents((current) =>

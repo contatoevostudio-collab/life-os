@@ -49,7 +49,7 @@ export function Topbar({ onOpenPomodoro, onOpenMobileNav }: TopbarProps) {
           <Input
             className="pl-9"
             onChange={(event) => setSearchQuery(event.target.value)}
-            placeholder="Buscar tarefas, eventos e lançamentos"
+            placeholder="Buscar atividades, projetos e calendário"
             value={searchQuery}
           />
         </div>

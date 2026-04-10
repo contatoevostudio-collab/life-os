@@ -22,7 +22,7 @@ export function ProjectsOverview() {
   return (
     <div className="space-y-6">
       <SectionHeading
-        description="Crie projetos por aqui e acompanhe cada um em um kanban próprio, com suas tarefas separadas por fase."
+        description="Crie projetos por aqui e acompanhe cada um em um kanban próprio, com suas atividades separadas por fase."
         eyebrow="Módulo"
         title="Projetos"
         action={<Badge>{projects.length} projetos</Badge>}
@@ -32,7 +32,7 @@ export function ProjectsOverview() {
         <div>
           <label className="mb-2 block text-sm text-text-soft">Projetos</label>
           <div className="flex flex-wrap gap-2">
-            <Button onClick={() => setFullModalOpen(true)}>Adicionar projeto</Button>
+            <Button onClick={() => setFullModalOpen(true)}>Projeto completo</Button>
             <Button onClick={() => setQuickModalOpen(true)} variant="secondary">
               Projeto rápido
             </Button>
@@ -41,7 +41,7 @@ export function ProjectsOverview() {
         <div className="rounded-[20px] border border-border bg-bg-elevated/70 p-4">
           <p className="text-sm text-text-soft">Organize por projeto</p>
           <p className="mt-1 text-sm text-text-muted">
-            Cada projeto ganha sua própria página, tarefas separadas e identidade visual por cor.
+            Cada projeto ganha sua própria página, atividades separadas e identidade visual por cor.
           </p>
         </div>
       </Card>
@@ -100,7 +100,7 @@ function ProjectCard({
         <div className="space-y-2">
           <ProjectPill color={project.color} name={project.name} />
           <p className="text-sm text-text-soft">{project.description ?? "Projeto sem descrição."}</p>
-          <p className="text-sm text-text-muted">{projectTasks} tarefas no total, {done} concluídas.</p>
+          <p className="text-sm text-text-muted">{projectTasks} atividades no total, {done} concluídas.</p>
         </div>
         <div className="flex gap-2">
           <Button onClick={() => setEditing((current) => !current)} variant="ghost">

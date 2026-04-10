@@ -46,13 +46,13 @@ export function TodayOverview() {
   return (
     <div className="space-y-6">
       <SectionHeading
-        description="Resumo do que está pendente, do que está andando e dos lembretes pessoais mais próximos."
+        description="Resumo do que está pendente, do que está andando e dos próximos lembretes vinculados ao seu fluxo."
         eyebrow="Home"
         title="Hoje"
         action={
           <div className="flex items-center gap-2">
-            <Badge>{priorityTasks.length} prioridades</Badge>
-            <Badge>{nextEvents.length} eventos</Badge>
+            <Badge>{priorityTasks.length} atividades</Badge>
+            <Badge>{nextEvents.length} lembretes</Badge>
           </div>
         }
       />
@@ -105,7 +105,7 @@ export function TodayOverview() {
               ))
             ) : (
               <EmptyState
-                description="Adicione tarefas, projetos e lembretes para a tela Hoje virar seu painel central."
+                description="Adicione atividades, projetos e lembretes para a tela Hoje virar seu painel central."
                 title="Seu dia ainda está em branco"
               />
             )}
@@ -133,9 +133,9 @@ export function TodayOverview() {
 
           <Card>
             <div className="flex items-center justify-between">
-              <p className="text-sm text-text-soft">Lembretes pessoais</p>
-              <Link className="rounded-[14px] px-4 py-2 text-sm font-medium text-text-soft transition hover:bg-accent-soft hover:text-text" href="/events">
-                Abrir eventos
+              <p className="text-sm text-text-soft">Próximos lembretes</p>
+              <Link className="rounded-[14px] px-4 py-2 text-sm font-medium text-text-soft transition hover:bg-accent-soft hover:text-text" href="/calendar">
+                Abrir calendário
               </Link>
             </div>
             <div className="mt-4 space-y-3">
@@ -151,7 +151,7 @@ export function TodayOverview() {
                 ))
               ) : (
                 <EmptyState
-                  description="Crie eventos pessoais e lembretes recorrentes na nova seção Eventos."
+                  description="Crie lembretes recorrentes ou atividades com prazo para vê-los no calendário."
                   title="Sem lembretes"
                 />
               )}
