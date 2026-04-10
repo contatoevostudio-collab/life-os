@@ -125,7 +125,7 @@ export function TaskComposerModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/28 p-4 backdrop-blur-sm">
-      <Card className="animate-fade-in w-full max-w-[44rem] overflow-hidden rounded-[32px] bg-bg-elevated/74 p-0">
+      <Card className="animate-fade-in flex max-h-[88vh] w-full max-w-[44rem] flex-col overflow-hidden rounded-[32px] bg-bg-elevated/74 p-0">
         <div className="h-1.5 bg-[linear-gradient(90deg,rgba(75,136,220,1),rgba(75,136,220,0.18))]" />
 
         <div className="flex items-start justify-between gap-4 px-6 pb-1 pt-6 md:px-7">
@@ -148,7 +148,7 @@ export function TaskComposerModal({
           </button>
         </div>
 
-        <div className="grid gap-4 px-6 pb-6 pt-3 md:px-7">
+        <div className="grid flex-1 gap-4 overflow-y-auto px-6 pb-6 pt-3 md:px-7">
           <div className="grid gap-5 md:grid-cols-[1.15fr_0.85fr]">
             <div className="rounded-[22px] border border-border/80 bg-bg-panel/62 p-4">
               <label className="mb-2 block text-sm text-text-soft">Título</label>
@@ -326,7 +326,7 @@ export function TaskComposerModal({
           ) : null}
         </div>
 
-        <div className="flex justify-end gap-2 border-t border-border/80 px-6 py-5 md:px-7">
+        <div className="flex justify-end gap-2 border-t border-border/80 bg-bg-panel/74 px-6 py-5 md:px-7">
           <Button onClick={onClose} variant="ghost">
             Cancelar
           </Button>

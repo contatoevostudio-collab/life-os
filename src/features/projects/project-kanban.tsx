@@ -56,9 +56,9 @@ export function ProjectKanban({ projectId }: ProjectKanbanProps) {
   }
 
 function label(status: TaskStatus) {
-  if (status === "todo") return "A fazer";
+  if (status === "todo") return "Pendente";
   if (status === "in_progress") return "Em andamento";
-  return "Concluídas";
+  return "Concluído";
 }
 
 function statusAccent(status: TaskStatus) {

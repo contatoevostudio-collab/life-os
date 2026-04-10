@@ -61,6 +61,12 @@ export function TasksBoard() {
 
   const columns: TaskStatus[] = ["todo", "in_progress", "done"];
 
+  const groupedTasks: Array<{ status: TaskStatus; title: string }> = [
+    { status: "todo", title: "Pendentes" },
+    { status: "in_progress", title: "Em andamento" },
+    { status: "done", title: "Concluídas" }
+  ];
+
   function getTaskElapsedSeconds(taskId: string) {
     const task = tasks.find((item) => item.id === taskId);
     if (!task) return 0;
@@ -75,6 +81,12 @@ export function TasksBoard() {
     if (status === "todo") return "Iniciar";
     if (status === "in_progress") return "Concluir";
     return "Reabrir";
+  }
+
+  function getStatusLabel(status: TaskStatus) {
+    if (status === "todo") return "Pendente";
+    if (status === "in_progress") return "Em andamento";
+    return "Concluído";
   }
 
   return (
@@ -184,51 +196,71 @@ export function TasksBoard() {
         <div className="grid gap-4 xl:grid-cols-[1.3fr_0.9fr]">
           <div className="grid gap-3">
             {filteredTasks.length ? (
-              filteredTasks.map((task) => (
-                <Card
-                  className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between"
-                  data-context="task"
-                  data-task-id={task.id}
-                  key={task.id}
-                >
-                  <div className="space-y-2">
-                    <div className="flex flex-wrap items-center gap-2">
-                      <h3 className="text-lg font-medium">{task.title}</h3>
-                      <Badge>{task.priority}</Badge>
-                      {task.projectId ? (
-                        <ProjectPill
-                          color={
-                            projects.find((project) => project.id === task.projectId)?.color ?? "#2563eb"
-                          }
-                          name={projects.find((project) => project.id === task.projectId)?.name ?? "Projeto"}
-                        />
-                      ) : null}
-                      <Badge className="bg-bg-elevated text-text-soft">{task.status}</Badge>
+              groupedTasks.map((group) => {
+                const tasksInGroup = filteredTasks.filter((task) => task.status === group.status);
+
+                return (
+                  <div className="space-y-3" key={group.status}>
+                    <div className="flex items-center justify-between rounded-[18px] border border-border/80 bg-bg-panel/56 px-4 py-3">
+                      <p className="text-sm font-medium">{group.title}</p>
+                      <Badge>{tasksInGroup.length}</Badge>
                     </div>
-                    <p className="text-sm text-text-soft">{task.description ?? "Sem descrição adicional."}</p>
-                    <p className="text-sm text-text-muted">
-                      Prazo {task.dueDate ? formatDate(task.dueDate) : "livre"}
-                    </p>
-                    {task.status === "in_progress" ? (
-                      <p className="text-sm font-medium text-accent">
-                        Cronômetro {formatDurationSeconds(getTaskElapsedSeconds(task.id))}
-                      </p>
-                    ) : task.trackedSeconds ? (
-                      <p className="text-sm text-text-muted">
-                        Tempo total {formatDurationSeconds(task.trackedSeconds)}
-                      </p>
-                    ) : null}
+
+                    {tasksInGroup.length ? (
+                      tasksInGroup.map((task) => (
+                        <Card
+                          className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between"
+                          data-context="task"
+                          data-task-id={task.id}
+                          key={task.id}
+                        >
+                          <div className="space-y-2">
+                            <div className="flex flex-wrap items-center gap-2">
+                              <h3 className="text-lg font-medium">{task.title}</h3>
+                              <Badge>{task.priority}</Badge>
+                              {task.projectId ? (
+                                <ProjectPill
+                                  color={
+                                    projects.find((project) => project.id === task.projectId)?.color ?? "#2563eb"
+                                  }
+                                  name={projects.find((project) => project.id === task.projectId)?.name ?? "Projeto"}
+                                />
+                              ) : null}
+                              <Badge className="bg-bg-elevated text-text-soft">{getStatusLabel(task.status)}</Badge>
+                            </div>
+                            <p className="text-sm text-text-soft">{task.description ?? "Sem descrição adicional."}</p>
+                            <p className="text-sm text-text-muted">
+                              Prazo {task.dueDate ? formatDate(task.dueDate) : "livre"}
+                            </p>
+                            {task.status === "in_progress" ? (
+                              <p className="text-sm font-medium text-accent">
+                                Cronômetro {formatDurationSeconds(getTaskElapsedSeconds(task.id))}
+                              </p>
+                            ) : task.trackedSeconds ? (
+                              <p className="text-sm text-text-muted">
+                                Tempo total {formatDurationSeconds(task.trackedSeconds)}
+                              </p>
+                            ) : null}
+                          </div>
+                          <div className="flex gap-2">
+                            <Button onClick={() => setEditingTaskId(task.id)} variant="ghost">
+                              Editar
+                            </Button>
+                            <Button onClick={() => toggleTaskStatus(task.id)} variant="secondary">
+                              {getAdvanceLabel(task.status)}
+                            </Button>
+                          </div>
+                        </Card>
+                      ))
+                    ) : (
+                      <EmptyState
+                        description={`Nenhuma atividade nesta seção no momento.`}
+                        title={`${group.title} vazias`}
+                      />
+                    )}
                   </div>
-                  <div className="flex gap-2">
-                    <Button onClick={() => setEditingTaskId(task.id)} variant="ghost">
-                      Editar
-                    </Button>
-                    <Button onClick={() => toggleTaskStatus(task.id)} variant="secondary">
-                      {getAdvanceLabel(task.status)}
-                    </Button>
-                  </div>
-                </Card>
-              ))
+                );
+              })
             ) : (
               <EmptyState
                 description="Crie sua primeira tarefa para começar a montar o fluxo do dia."
@@ -366,7 +398,7 @@ export function TasksBoard() {
               }}
             >
               <div className="flex items-center justify-between">
-                <h3 className="text-lg font-medium">{status}</h3>
+                <h3 className="text-lg font-medium">{getStatusLabel(status)}</h3>
                 <span className="text-sm text-text-muted">
                   {filteredTasks.filter((task) => task.status === status).length}
                 </span>
