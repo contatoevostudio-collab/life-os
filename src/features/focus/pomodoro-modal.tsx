@@ -26,6 +26,8 @@ export function PomodoroModal({ open, onClose }: PomodoroModalProps) {
   const [remainingSeconds, setRemainingSeconds] = useState(focusMinutes * 60);
   const [running, setRunning] = useState(false);
   const [focusView, setFocusView] = useState(false);
+  const [endsAt, setEndsAt] = useState<number | null>(null);
+  const [sessionStartedAt, setSessionStartedAt] = useState<number | null>(null);
 
   useEffect(() => {
     setFocusMinutes(preferences.pomodoroFocusMinutes);
@@ -53,29 +55,36 @@ export function PomodoroModal({ open, onClose }: PomodoroModalProps) {
       return;
     }
 
-    const interval = window.setInterval(() => {
-      setRemainingSeconds((current) => {
-        if (current <= 1) {
-          window.clearInterval(interval);
-          setRunning(false);
-          saveSession({
-            userId: user?.id ?? "demo-user",
-            taskId: selectedTaskId || null,
-            durationMinutes: focusMinutes,
-            breakMinutes,
-            status: "completed",
-            startedAt: new Date(Date.now() - focusMinutes * 60 * 1000).toISOString(),
-            endedAt: new Date().toISOString()
-          });
-          return focusMinutes * 60;
-        }
+    if (!endsAt) {
+      return;
+    }
 
-        return current - 1;
+    const interval = window.setInterval(() => {
+      const nextSeconds = Math.max(0, Math.ceil((endsAt - Date.now()) / 1000));
+      setRemainingSeconds(nextSeconds);
+
+      if (nextSeconds > 0) {
+        return;
+      }
+
+      window.clearInterval(interval);
+      setRunning(false);
+      setEndsAt(null);
+      saveSession({
+        userId: user?.id ?? "demo-user",
+        taskId: selectedTaskId || null,
+        durationMinutes: focusMinutes,
+        breakMinutes,
+        status: "completed",
+        startedAt: new Date(sessionStartedAt ?? Date.now() - focusMinutes * 60 * 1000).toISOString(),
+        endedAt: new Date().toISOString()
       });
-    }, 1000);
+      setSessionStartedAt(null);
+      setRemainingSeconds(focusMinutes * 60);
+    }, 250);
 
     return () => window.clearInterval(interval);
-  }, [breakMinutes, focusMinutes, running, saveSession, selectedTaskId, user?.id]);
+  }, [breakMinutes, endsAt, focusMinutes, running, saveSession, selectedTaskId, sessionStartedAt, user?.id]);
 
   useEffect(() => {
     setRemainingSeconds(focusMinutes * 60);
@@ -191,7 +200,19 @@ export function PomodoroModal({ open, onClose }: PomodoroModalProps) {
 
         <div className="flex flex-wrap gap-3">
           <Button
-            onClick={() => setRunning((current) => !current)}
+            onClick={() => {
+              if (running) {
+                const nextSeconds = endsAt ? Math.max(0, Math.ceil((endsAt - Date.now()) / 1000)) : remainingSeconds;
+                setRemainingSeconds(nextSeconds);
+                setEndsAt(null);
+                setRunning(false);
+                return;
+              }
+
+              setSessionStartedAt((current) => current ?? Date.now());
+              setEndsAt(Date.now() + remainingSeconds * 1000);
+              setRunning(true);
+            }}
             variant={running ? "secondary" : "primary"}
           >
             {running ? <Pause className="size-4" /> : <Play className="size-4" />}
@@ -200,6 +221,8 @@ export function PomodoroModal({ open, onClose }: PomodoroModalProps) {
           <Button
             onClick={() => {
               setRunning(false);
+              setEndsAt(null);
+              setSessionStartedAt(null);
               setRemainingSeconds(focusMinutes * 60);
             }}
             variant="ghost"

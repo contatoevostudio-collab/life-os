@@ -3,12 +3,13 @@
 import { useEffect, useState, type PropsWithChildren } from "react";
 import Link from "next/link";
 
-import { navigation } from "@/config/navigation";
+import { primaryNavigation } from "@/config/navigation";
 import { OnboardingModal } from "@/components/layout/onboarding-modal";
 import { PomodoroModal } from "@/features/focus/pomodoro-modal";
 import { useAppState } from "@/providers/app-state-provider";
 import { formatDurationSeconds } from "@/lib/utils";
 
+import { ProjectsNav } from "./projects-nav";
 import { Sidebar } from "./sidebar";
 import { Topbar } from "./topbar";
 
@@ -41,16 +42,20 @@ export function AppShell({ children }: PropsWithChildren) {
             {mobileOpen ? (
               <div className="glass-panel rounded-[24px] p-4 lg:hidden">
                 <nav className="grid gap-2">
-                  {navigation.map((item) => (
-                    <Link
-                      className="rounded-[16px] px-4 py-3 text-sm font-medium text-text-soft transition hover:bg-bg-elevated hover:text-text"
-                      href={item.href}
-                      key={item.href}
-                      onClick={() => setMobileOpen(false)}
-                    >
-                      {item.label}
-                    </Link>
-                  ))}
+                  {primaryNavigation.map((item) =>
+                    item.href === "/projects" ? (
+                      <ProjectsNav key={item.href} onNavigate={() => setMobileOpen(false)} />
+                    ) : (
+                      <Link
+                        className="rounded-[16px] px-4 py-3 text-sm font-medium text-text-soft transition hover:bg-bg-elevated hover:text-text"
+                        href={item.href}
+                        key={item.href}
+                        onClick={() => setMobileOpen(false)}
+                      >
+                        {item.label}
+                      </Link>
+                    )
+                  )}
                 </nav>
               </div>
             ) : null}

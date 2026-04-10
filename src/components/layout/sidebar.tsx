@@ -3,8 +3,10 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
-import { navigation } from "@/config/navigation";
+import { primaryNavigation } from "@/config/navigation";
 import { cn } from "@/lib/utils";
+
+import { ProjectsNav } from "./projects-nav";
 
 export function Sidebar() {
   const pathname = usePathname();
@@ -24,7 +26,11 @@ export function Sidebar() {
       </div>
 
       <nav className="space-y-2">
-        {navigation.map((item) => {
+        {primaryNavigation.map((item) => {
+          if (item.href === "/projects") {
+            return <ProjectsNav key={item.href} />;
+          }
+
           const active = pathname === item.href;
           const Icon = item.icon;
 
