@@ -69,7 +69,6 @@ export function TaskComposerModal({
       description: mode === "full" ? form.description.trim() || null : null,
       priority: form.priority,
       status: "todo",
-      dueDate: mode === "full" ? form.dueDate || null : null,
       estimatedMinutes: form.estimatedMinutes ? Number(form.estimatedMinutes) : null,
       scheduledStart: null,
       scheduledEnd: null,
