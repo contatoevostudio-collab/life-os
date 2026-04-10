@@ -96,7 +96,7 @@ function taskToneClass(status: "todo" | "in_progress" | "done") {
 }
 
 function eventToneClass() {
-  return "border-border bg-bg-elevated/70 text-text-soft";
+  return "border-border/80 bg-bg-panel/74 text-text-soft";
 }
 
 export function CalendarPlanner() {
@@ -171,11 +171,11 @@ export function CalendarPlanner() {
         eyebrow="Módulo"
         title="Calendário"
         action={
-          <div className="inline-flex rounded-full border border-border bg-bg-panel p-1">
+          <div className="inline-flex rounded-full border border-border bg-bg-panel/85 p-1.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.18)]">
             {views.map((item) => (
               <button
                 className={`rounded-full px-4 py-2 text-sm transition ${
-                  view === item ? "bg-bg-elevated text-text shadow-sm" : "text-text-soft hover:text-text"
+                  view === item ? "bg-bg-elevated text-text shadow-sm" : "text-text-soft hover:bg-bg-elevated/50 hover:text-text"
                 }`}
                 key={item}
                 onClick={() => setView(item)}
@@ -189,7 +189,7 @@ export function CalendarPlanner() {
       />
 
       <div className="grid gap-4 xl:grid-cols-[1.7fr_0.8fr]">
-        <Card className="overflow-hidden rounded-[30px] p-0">
+        <Card className="editorial-surface overflow-hidden rounded-[32px] p-0">
           <div className="border-b border-border px-6 py-5">
             <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
               <div>
@@ -236,9 +236,9 @@ export function CalendarPlanner() {
 
           {view === "month" ? (
             <>
-              <div className="grid grid-cols-7 border-b border-border px-2 py-3">
+              <div className="grid grid-cols-7 border-b border-border px-3 py-3">
                 {weekDays.map((day) => (
-                  <div className="px-3 text-sm text-text-muted" key={day}>
+                  <div className="px-3 text-xs font-semibold uppercase tracking-[0.18em] text-text-muted" key={day}>
                     {day}
                   </div>
                 ))}
@@ -253,7 +253,7 @@ export function CalendarPlanner() {
                     <button
                       className={`min-h-44 border-r border-b border-border p-3 text-left transition ${
                         outOfMonth ? "bg-black/2 opacity-45 dark:bg-white/2" : ""
-                      } ${isSelected ? "bg-accent-soft/50" : "hover:bg-bg-elevated/80"}`}
+                      } ${isSelected ? "bg-accent-soft/42" : "hover:bg-bg-elevated/72"}`}
                       data-calendar-date={day.toISOString()}
                       data-context="calendar-day"
                       key={day.toISOString()}
@@ -263,10 +263,10 @@ export function CalendarPlanner() {
                       <span className={`text-sm ${sameDay(day, new Date()) ? "font-semibold text-accent" : "text-text-soft"}`}>
                         {day.getDate()}
                       </span>
-                      <div className="mt-3 space-y-1.5">
+                      <div className="mt-3 space-y-1">
                         {dayItems.events.slice(0, 3).map((event) => (
                           <div
-                            className={`truncate rounded-full border px-2.5 py-1 text-[11px] ${eventToneClass()}`}
+                            className={`truncate rounded-full border px-2.5 py-[0.32rem] text-[10px] ${eventToneClass()}`}
                             key={event.id}
                           >
                             {event.title}
@@ -274,7 +274,7 @@ export function CalendarPlanner() {
                         ))}
                         {dayItems.tasks.slice(0, 2).map((task) => (
                           <div
-                            className={`truncate rounded-full border px-2.5 py-1 text-[11px] ${taskToneClass(task.status)}`}
+                            className={`truncate rounded-full border px-2.5 py-[0.32rem] text-[10px] ${taskToneClass(task.status)}`}
                             key={task.id}
                           >
                             {task.title}
@@ -294,8 +294,8 @@ export function CalendarPlanner() {
                 const dayItems = itemsForDay(day);
                 return (
                   <button
-                    className={`min-h-[34rem] border-r border-border p-4 text-left transition hover:bg-bg-elevated/60 ${
-                      sameDay(day, selectedDate) ? "bg-accent-soft/40" : ""
+                    className={`min-h-[34rem] border-r border-border p-4 text-left transition hover:bg-bg-elevated/58 ${
+                      sameDay(day, selectedDate) ? "bg-accent-soft/34" : ""
                     }`}
                     data-calendar-date={day.toISOString()}
                     data-context="calendar-day"
@@ -307,7 +307,7 @@ export function CalendarPlanner() {
                     <p className="mt-2 text-xl font-semibold">{day.getDate()}</p>
                     <div className="mt-4 space-y-2">
                       {dayItems.events.map((event) => (
-                        <div className={`rounded-[16px] border px-3 py-2 text-xs ${eventToneClass()}`} key={event.id}>
+                        <div className={`rounded-[14px] border px-3 py-2 text-[11px] ${eventToneClass()}`} key={event.id}>
                           <div className="flex items-center justify-between gap-2">
                             <span>{event.title}</span>
                             <span className="text-[10px] uppercase tracking-[0.18em] text-text-muted">
@@ -317,7 +317,7 @@ export function CalendarPlanner() {
                         </div>
                       ))}
                       {dayItems.tasks.map((task) => (
-                        <div className={`rounded-[16px] border px-3 py-2 text-xs ${taskToneClass(task.status)}`} key={task.id}>
+                        <div className={`rounded-[14px] border px-3 py-2 text-[11px] ${taskToneClass(task.status)}`} key={task.id}>
                           {task.title}
                         </div>
                       ))}
@@ -341,7 +341,7 @@ export function CalendarPlanner() {
                 </h4>
               </div>
               <div className="grid gap-4 md:grid-cols-3">
-                <Card className="space-y-3 bg-bg-elevated">
+                <Card className="editorial-surface space-y-3 bg-bg-elevated">
                   <p className="text-sm text-text-soft">Lembretes</p>
                   {itemsForDay(cursorDate).events.length ? (
                     itemsForDay(cursorDate).events.map((event) => (
@@ -354,7 +354,7 @@ export function CalendarPlanner() {
                     ))
                   ) : <EmptyState description="Sem lembretes neste dia." title="Agenda vazia" />}
                 </Card>
-                <Card className="space-y-3 bg-bg-elevated">
+                <Card className="editorial-surface space-y-3 bg-bg-elevated">
                   <p className="text-sm text-text-soft">Tarefas</p>
                   {itemsForDay(cursorDate).tasks.length ? (
                     itemsForDay(cursorDate).tasks.map((task) => (
@@ -377,7 +377,7 @@ export function CalendarPlanner() {
                 const grid = buildMonthGrid(month).slice(0, 35);
                 return (
                   <button
-                    className="rounded-[24px] border border-border bg-bg-elevated p-4 text-left transition hover:border-accent hover:bg-bg-panel"
+                    className="rounded-[26px] border border-border bg-bg-elevated/84 p-4 text-left transition hover:border-accent hover:bg-bg-panel"
                     key={month.toISOString()}
                     onClick={() => {
                       setCursorDate(month);
@@ -410,7 +410,7 @@ export function CalendarPlanner() {
         </Card>
 
         <div className="space-y-4">
-          <Card className="space-y-4">
+          <Card className="editorial-surface space-y-4">
             <div>
               <p className="text-sm text-text-soft">Resumo do dia</p>
               <h3 className="mt-1 text-2xl font-semibold tracking-[-0.04em]">
@@ -421,29 +421,29 @@ export function CalendarPlanner() {
               </h3>
             </div>
             <div className="grid gap-3 sm:grid-cols-3 xl:grid-cols-1">
-              <div className="rounded-[20px] bg-bg-elevated p-4">
+              <div className="rounded-[22px] bg-bg-elevated/86 p-4">
                 <p className="text-xs uppercase tracking-[0.2em] text-text-muted">Tarefas</p>
                 <p className="mt-2 text-3xl font-semibold tracking-[-0.05em]">{selectedTasks.length}</p>
               </div>
-              <div className="rounded-[20px] bg-bg-elevated p-4">
+              <div className="rounded-[22px] bg-bg-elevated/86 p-4">
                 <p className="text-xs uppercase tracking-[0.2em] text-text-muted">Lembretes</p>
                 <p className="mt-2 text-3xl font-semibold tracking-[-0.05em]">{selectedEvents.length}</p>
               </div>
             </div>
           </Card>
 
-          <Card className="space-y-4">
+          <Card className="editorial-surface space-y-4">
             <p className="text-sm text-text-soft">Agenda de atividades</p>
             {selectedEvents.length || selectedTasks.length ? (
               <div className="space-y-3">
                 {selectedEvents.map((event) => (
-                  <div className="rounded-[18px] bg-bg-elevated p-4" key={event.id}>
+                  <div className="rounded-[20px] bg-bg-elevated/86 p-4" key={event.id}>
                     <p className="font-medium">{event.title}</p>
                     <p className="mt-1 text-sm text-text-soft">{formatDateTime(event.startsAt)}</p>
                   </div>
                 ))}
                 {selectedTasks.map((task) => (
-                  <div className="rounded-[18px] bg-bg-elevated p-4" key={task.id}>
+                  <div className="rounded-[20px] bg-bg-elevated/86 p-4" key={task.id}>
                     <div className="flex items-center gap-2">
                       <span className="text-sm font-medium">{task.title}</span>
                       {task.projectId ? (
@@ -462,7 +462,7 @@ export function CalendarPlanner() {
             )}
           </Card>
 
-          <Card className="space-y-4">
+          <Card className="editorial-surface space-y-4">
             <p className="text-sm text-text-soft">Nova atividade no calendário</p>
             <Input onChange={(event) => setTitle(event.target.value)} placeholder="Título" value={title} />
             <Input onChange={(event) => setStartsAt(event.target.value)} type="datetime-local" value={startsAt} />

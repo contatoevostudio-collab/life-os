@@ -75,9 +75,59 @@ export function DashboardOverview() {
         title="Dashboard"
       />
 
+      <div className="grid gap-4 xl:grid-cols-[1.45fr_0.95fr]">
+        <Card className="editorial-surface overflow-hidden">
+          <div className="flex flex-col gap-6 xl:flex-row xl:items-end xl:justify-between">
+            <div className="max-w-2xl space-y-3">
+              <p className="text-xs font-semibold uppercase tracking-[0.28em] text-text-muted">Painel central</p>
+              <h3 className="text-4xl font-semibold tracking-[-0.08em] md:text-[3.5rem]">
+                Clareza para decidir o ritmo da semana.
+              </h3>
+              <p className="max-w-xl text-[0.98rem] leading-7 text-text-soft">
+                O dashboard agora funciona mais como uma mesa de comando: leitura imediata do que pede ação,
+                do que já avançou e de como o fluxo está distribuído ao longo dos dias.
+              </p>
+            </div>
+            <div className="grid w-full gap-3 sm:grid-cols-3 xl:w-[22rem] xl:grid-cols-1">
+              <div className="rounded-[22px] border border-border bg-bg-elevated/90 p-4">
+                <p className="text-xs uppercase tracking-[0.2em] text-text-muted">Pendentes</p>
+                <p className="mt-2 text-3xl font-semibold tracking-[-0.05em]">{pending}</p>
+              </div>
+              <div className="rounded-[22px] border border-border bg-bg-elevated/90 p-4">
+                <p className="text-xs uppercase tracking-[0.2em] text-text-muted">Em andamento</p>
+                <p className="mt-2 text-3xl font-semibold tracking-[-0.05em]">{inProgress}</p>
+              </div>
+              <div className="rounded-[22px] border border-border bg-bg-elevated/90 p-4">
+                <p className="text-xs uppercase tracking-[0.2em] text-text-muted">Concluídas</p>
+                <p className="mt-2 text-3xl font-semibold tracking-[-0.05em]">{completed}</p>
+              </div>
+            </div>
+          </div>
+        </Card>
+
+        <Card className="editorial-surface space-y-4">
+          <div className="flex items-center justify-between">
+            <p className="text-sm text-text-soft">Leitura da operação</p>
+            <Sparkles className="size-4 text-accent" />
+          </div>
+          <div className="space-y-3 text-sm leading-7 text-text-soft">
+            <p>O painel prioriza sinal real, não volume visual.</p>
+            <p>O bloco semanal já responde ao status verdadeiro das atividades.</p>
+            <p>As métricas menores abaixo funcionam como leitura rápida, sem competir com a área principal.</p>
+          </div>
+          <div className="rounded-[22px] border border-border bg-bg-elevated/80 p-4">
+            <div className="flex items-center gap-2 text-text">
+              <CircleCheckBig className="size-4 text-accent" />
+              <p className="font-medium">Foco acumulado</p>
+            </div>
+            <p className="mt-2 text-3xl font-semibold tracking-[-0.06em]">{focusMinutes}m</p>
+          </div>
+        </Card>
+      </div>
+
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         {metrics.map((metric) => (
-          <Card className="relative overflow-hidden border border-border bg-bg-elevated/80" key={metric.label}>
+          <Card className="relative overflow-hidden bg-bg-elevated/78" key={metric.label}>
             <span className={`absolute inset-x-0 top-0 h-1 ${metric.accent}`} />
             <p className="text-sm text-text-soft">{metric.label}</p>
             <p className="mt-2 text-3xl font-semibold tracking-[-0.05em]">{metric.value}</p>
@@ -86,7 +136,7 @@ export function DashboardOverview() {
       </div>
 
       <div className="grid gap-4 xl:grid-cols-2">
-        <Card>
+        <Card className="editorial-surface">
           <div className="flex items-center justify-between">
             <p className="text-sm text-text-soft">Fluxo da semana</p>
             <ArrowUpRight className="size-4 text-text-muted" />
@@ -104,7 +154,7 @@ export function DashboardOverview() {
                     <span className="w-10 text-sm text-text-muted">
                       {new Intl.DateTimeFormat("pt-BR", { weekday: "short" }).format(item.day).replace(".", "")}
                     </span>
-                    <div className="flex h-3 flex-1 overflow-hidden rounded-full bg-bg-elevated">
+                    <div className="flex h-3.5 flex-1 overflow-hidden rounded-full bg-bg-elevated">
                       <div className="bg-[#fecaca] dark:bg-[#5a2626]" style={{ width: `${todoWidth}%` }} />
                       <div className="bg-[#fcd34d] dark:bg-[#6a5420]" style={{ width: `${inProgressWidth}%` }} />
                       <div className="bg-[#86efac] dark:bg-[#25553a]" style={{ width: `${doneWidth}%` }} />
@@ -123,23 +173,23 @@ export function DashboardOverview() {
           )}
         </Card>
 
-        <Card>
+        <Card className="editorial-surface">
           <div className="flex items-center justify-between">
-            <p className="text-sm text-text-soft">Leitura da operação</p>
+            <p className="text-sm text-text-soft">Legenda visual</p>
             <Sparkles className="size-4 text-accent" />
           </div>
-          <div className="mt-4 space-y-3 text-sm text-text-soft">
-            <p>O dashboard mostra o que está pendente, em andamento e concluído no mesmo lugar.</p>
-            <p>Os blocos de semana agora respeitam o status real das atividades do período.</p>
-            <p>Quanto mais você mover atividades entre estados, mais útil fica a leitura do painel.</p>
-            <div className="rounded-[20px] border border-border bg-bg-elevated/70 p-4">
-              <div className="flex items-center gap-2 text-text">
-                <CircleCheckBig className="size-4 text-accent" />
-                <p className="font-medium">Resumo rápido</p>
-              </div>
-              <p className="mt-2 text-sm text-text-soft">
-                Use este painel como sua central de decisão diária, sem finanças e sem ruído desnecessário.
-              </p>
+          <div className="mt-5 grid gap-3">
+            <div className="flex items-center justify-between rounded-[20px] border border-border bg-bg-elevated/75 px-4 py-3">
+              <span className="text-sm text-text-soft">A fazer</span>
+              <span className="h-3.5 w-20 rounded-full bg-[#fecaca] dark:bg-[#5a2626]" />
+            </div>
+            <div className="flex items-center justify-between rounded-[20px] border border-border bg-bg-elevated/75 px-4 py-3">
+              <span className="text-sm text-text-soft">Em andamento</span>
+              <span className="h-3.5 w-20 rounded-full bg-[#fcd34d] dark:bg-[#6a5420]" />
+            </div>
+            <div className="flex items-center justify-between rounded-[20px] border border-border bg-bg-elevated/75 px-4 py-3">
+              <span className="text-sm text-text-soft">Concluída</span>
+              <span className="h-3.5 w-20 rounded-full bg-[#86efac] dark:bg-[#25553a]" />
             </div>
           </div>
         </Card>

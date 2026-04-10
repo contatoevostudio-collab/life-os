@@ -8,7 +8,7 @@ export function Card({ className, children, ...props }: CardProps) {
   return (
     <section
       className={cn(
-        "glass-panel lift-card rounded-[24px] p-5 md:p-6",
+        "glass-panel lift-card rounded-[26px] border border-border/90 p-5 md:p-6",
         className
       )}
       {...props}

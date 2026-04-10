@@ -28,7 +28,7 @@ export function ProjectsOverview() {
         action={<Badge>{projects.length} projetos</Badge>}
       />
 
-      <Card className="grid gap-4 xl:grid-cols-[1.4fr_1fr]">
+      <Card className="editorial-surface grid gap-4 xl:grid-cols-[1.4fr_1fr]">
         <div>
           <label className="mb-2 block text-sm text-text-soft">Projetos</label>
           <div className="flex flex-wrap gap-2">
@@ -38,9 +38,9 @@ export function ProjectsOverview() {
             </Button>
           </div>
         </div>
-        <div className="rounded-[20px] border border-border bg-bg-elevated/70 p-4">
+        <div className="rounded-[24px] border border-border bg-bg-elevated/82 p-5">
           <p className="text-sm text-text-soft">Organize por projeto</p>
-          <p className="mt-1 text-sm text-text-muted">
+          <p className="mt-2 text-sm leading-7 text-text-muted">
             Cada projeto ganha sua própria página, atividades separadas e identidade visual por cor.
           </p>
         </div>
@@ -87,7 +87,7 @@ function ProjectCard({
 
   return (
     <Card
-      className="space-y-4 overflow-hidden"
+      className="editorial-surface space-y-5 overflow-hidden"
       data-context="project"
       data-project-id={project.id}
       style={{ boxShadow: `0 18px 42px ${project.color}14` }}
@@ -96,10 +96,10 @@ function ProjectCard({
         className="h-1.5 rounded-full"
         style={{ background: `linear-gradient(90deg, ${project.color}, transparent)` }}
       />
-      <div className="flex items-start justify-between gap-3">
-        <div className="space-y-2">
+      <div className="flex items-start justify-between gap-4">
+        <div className="space-y-3">
           <ProjectPill color={project.color} name={project.name} />
-          <p className="text-sm text-text-soft">{project.description ?? "Projeto sem descrição."}</p>
+          <p className="max-w-lg text-sm leading-7 text-text-soft">{project.description ?? "Projeto sem descrição."}</p>
           <p className="text-sm text-text-muted">{projectTasks} atividades no total, {done} concluídas.</p>
         </div>
         <div className="flex gap-2">
@@ -112,17 +112,17 @@ function ProjectCard({
         </div>
       </div>
       <div className="grid gap-3 sm:grid-cols-3">
-        <div className="rounded-[18px] border border-border bg-bg-elevated/80 p-4">
+        <div className="rounded-[22px] border border-border bg-bg-elevated/88 p-4">
           <p className="text-xs uppercase tracking-[0.18em] text-text-muted">A fazer</p>
           <p className="mt-2 text-2xl font-semibold">{tasks.filter((task) => task.projectId === project.id && task.status === "todo").length}</p>
         </div>
-        <div className="rounded-[18px] border border-border bg-bg-elevated/80 p-4">
+        <div className="rounded-[22px] border border-border bg-bg-elevated/88 p-4">
           <p className="text-xs uppercase tracking-[0.18em] text-text-muted">Em andamento</p>
           <p className="mt-2 text-2xl font-semibold">
             {tasks.filter((task) => task.projectId === project.id && task.status === "in_progress").length}
           </p>
         </div>
-        <div className="rounded-[18px] border border-border bg-bg-elevated/80 p-4">
+        <div className="rounded-[22px] border border-border bg-bg-elevated/88 p-4">
           <p className="text-xs uppercase tracking-[0.18em] text-text-muted">Concluídas</p>
           <p className="mt-2 text-2xl font-semibold">{done}</p>
         </div>
