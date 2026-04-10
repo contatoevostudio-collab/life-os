@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { ProjectPill } from "@/components/ui/project-pill";
 import { SectionHeading } from "@/components/ui/section-heading";
 import { Select } from "@/components/ui/select";
+import { eventOccursOn, formatEventRecurrence } from "@/lib/event-utils";
 import { currency, formatDateTime } from "@/lib/utils";
 import { useAppState } from "@/providers/app-state-provider";
 import { useAuth } from "@/providers/auth-provider";
@@ -94,6 +95,10 @@ function taskToneClass(status: "todo" | "in_progress" | "done") {
   return `${tone.bg} ${tone.text} ${tone.border}`;
 }
 
+function eventToneClass() {
+  return "border-border bg-bg-elevated/70 text-text-soft";
+}
+
 export function CalendarPlanner() {
   const { events, tasks, transactions, addEvent, searchQuery, projects } = useAppState();
   const { user } = useAuth();
@@ -133,7 +138,7 @@ export function CalendarPlanner() {
   const selectedTransactions = transactions.filter((transaction) =>
     sameDay(new Date(transaction.date), selectedDate)
   );
-  const selectedEvents = visibleEvents.filter((event) => sameDay(new Date(event.startsAt), selectedDate));
+  const selectedEvents = visibleEvents.filter((event) => eventOccursOn(event, selectedDate));
   const selectedBalance = selectedTransactions.reduce(
     (total, item) => total + (item.type === "income" ? item.amount : -item.amount),
     0
@@ -141,7 +146,7 @@ export function CalendarPlanner() {
 
   function itemsForDay(day: Date) {
     return {
-      events: visibleEvents.filter((event) => sameDay(new Date(event.startsAt), day)),
+      events: visibleEvents.filter((event) => eventOccursOn(event, day)),
       tasks: tasks.filter((task) => task.dueDate && sameDay(new Date(task.dueDate), day)),
       transactions: transactions.filter((transaction) => sameDay(new Date(transaction.date), day))
     };
@@ -269,7 +274,7 @@ export function CalendarPlanner() {
                       <div className="mt-3 space-y-1.5">
                         {dayItems.events.slice(0, 3).map((event) => (
                           <div
-                            className="truncate rounded-full bg-[#dfe8ff] px-2.5 py-1 text-[11px] text-[#25406b] dark:bg-[#243145] dark:text-[#d8e4ff]"
+                            className={`truncate rounded-full border px-2.5 py-1 text-[11px] ${eventToneClass()}`}
                             key={event.id}
                           >
                             {event.title}
@@ -318,8 +323,13 @@ export function CalendarPlanner() {
                     <p className="mt-2 text-xl font-semibold">{day.getDate()}</p>
                     <div className="mt-4 space-y-2">
                       {dayItems.events.map((event) => (
-                        <div className="rounded-[16px] bg-[#dfe8ff] px-3 py-2 text-xs text-[#25406b] dark:bg-[#243145] dark:text-[#d8e4ff]" key={event.id}>
-                          {event.title}
+                        <div className={`rounded-[16px] border px-3 py-2 text-xs ${eventToneClass()}`} key={event.id}>
+                          <div className="flex items-center justify-between gap-2">
+                            <span>{event.title}</span>
+                            <span className="text-[10px] uppercase tracking-[0.18em] text-text-muted">
+                              {formatEventRecurrence(event)}
+                            </span>
+                          </div>
                         </div>
                       ))}
                       {dayItems.tasks.map((task) => (
@@ -356,9 +366,11 @@ export function CalendarPlanner() {
                   <p className="text-sm text-text-soft">Eventos</p>
                   {itemsForDay(cursorDate).events.length ? (
                     itemsForDay(cursorDate).events.map((event) => (
-                      <div className="rounded-[16px] bg-bg-panel p-3" key={event.id}>
+                      <div className="rounded-[16px] border border-border bg-bg-panel p-3" key={event.id}>
                         <p className="font-medium">{event.title}</p>
-                        <p className="mt-1 text-sm text-text-soft">{formatDateTime(event.startsAt)}</p>
+                        <p className="mt-1 text-sm text-text-soft">
+                          {formatDateTime(event.startsAt)} • {formatEventRecurrence(event)}
+                        </p>
                       </div>
                     ))
                   ) : (

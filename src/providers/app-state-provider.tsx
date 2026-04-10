@@ -44,6 +44,8 @@ interface AppStateContextValue {
   updateTask: (taskId: string, patch: Partial<Task>) => void;
   deleteTask: (taskId: string) => void;
   addEvent: (event: Omit<CalendarEvent, "id">) => void;
+  updateEvent: (eventId: string, patch: Partial<CalendarEvent>) => void;
+  deleteEvent: (eventId: string) => void;
   addTransaction: (transaction: Omit<FinancialTransaction, "id">) => void;
   saveSession: (session: Omit<FocusSession, "id">) => void;
   updatePreferences: (patch: Partial<UserPreferences>) => void;
@@ -226,7 +228,15 @@ export function AppStateProvider({ children }: PropsWithChildren) {
         setEvents((current) => current.filter((event) => event.taskId !== taskId));
       },
       addEvent(event) {
-        setEvents((current) => [{ ...event, id: uid("event") }, ...current]);
+        setEvents((current) => [{ ...event, recurrence: event.recurrence ?? null, id: uid("event") }, ...current]);
+      },
+      updateEvent(eventId, patch) {
+        setEvents((current) =>
+          current.map((event) => (event.id === eventId ? { ...event, ...patch } : event))
+        );
+      },
+      deleteEvent(eventId) {
+        setEvents((current) => current.filter((event) => event.id !== eventId));
       },
       addTransaction(transaction) {
         setTransactions((current) => [{ ...transaction, id: uid("txn") }, ...current]);

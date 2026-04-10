@@ -1,17 +1,19 @@
 "use client";
 
-import { CalendarDays, CircleCheckBig, Clock3, Wallet } from "lucide-react";
+import Link from "next/link";
+import { CircleCheckBig, Clock3 } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
+import { ProjectPill } from "@/components/ui/project-pill";
 import { SectionHeading } from "@/components/ui/section-heading";
-import { currency, formatDateTime, formatHours } from "@/lib/utils";
+import { formatDateTime, formatHours } from "@/lib/utils";
+import { formatEventRecurrence, nextEventOccurrence } from "@/lib/event-utils";
 import { useAppState } from "@/providers/app-state-provider";
 
 export function TodayOverview() {
-  const { tasks, events, sessions, transactions, searchQuery } = useAppState();
+  const { tasks, events, sessions, searchQuery, projects } = useAppState();
 
   const filteredTasks = tasks.filter(
     (task) =>
@@ -27,20 +29,24 @@ export function TodayOverview() {
   );
 
   const priorityTasks = filteredTasks.filter((task) => task.status !== "done").slice(0, 4);
-  const nextEvents = [...filteredEvents].sort((a, b) => a.startsAt.localeCompare(b.startsAt)).slice(0, 3);
+  const nextEvents = [...filteredEvents]
+    .sort((a, b) => {
+      const nextA = nextEventOccurrence(a) ?? new Date(a.startsAt);
+      const nextB = nextEventOccurrence(b) ?? new Date(b.startsAt);
+      return nextA.getTime() - nextB.getTime();
+    })
+    .slice(0, 3);
+  const todoCount = filteredTasks.filter((task) => task.status === "todo").length;
+  const progressCount = filteredTasks.filter((task) => task.status === "in_progress").length;
+  const doneCount = filteredTasks.filter((task) => task.status === "done").length;
   const focusMinutes = sessions
     .filter((session) => session.status === "completed")
     .reduce((total, session) => total + session.durationMinutes, 0);
-  const monthlyBalance = transactions.reduce(
-    (total, transaction) =>
-      transaction.type === "income" ? total + transaction.amount : total - transaction.amount,
-    0
-  );
 
   return (
     <div className="space-y-6">
       <SectionHeading
-        description="Resumo rápido do que exige atenção, do que vem a seguir e de como o dia está evoluindo."
+        description="Resumo do que está pendente, do que está andando e dos lembretes pessoais mais próximos."
         eyebrow="Home"
         title="Hoje"
         action={
@@ -52,19 +58,19 @@ export function TodayOverview() {
       />
 
       <div className="grid gap-4 xl:grid-cols-[1.5fr_1fr]">
-        <Card className="space-y-5 bg-[linear-gradient(180deg,rgba(255,255,255,0.38),rgba(255,255,255,0.14))] dark:bg-[linear-gradient(180deg,rgba(255,255,255,0.06),rgba(255,255,255,0.03))]">
+        <Card className="space-y-5 bg-[linear-gradient(180deg,rgba(255,255,255,0.26),rgba(255,255,255,0.08))] dark:bg-[linear-gradient(180deg,rgba(255,255,255,0.05),rgba(255,255,255,0.02))]">
           <div className="flex items-start justify-between gap-4">
             <div className="space-y-2">
-              <p className="text-sm text-text-soft">Prioridades do dia</p>
+              <p className="text-sm text-text-soft">Controle da atividade</p>
               <h3 className="text-2xl font-semibold tracking-[-0.05em]">
-                Execução focada, sem excesso de ruído
+                Hoje funciona como o seu novo dashboard
               </h3>
               <p className="max-w-xl text-sm text-text-soft">
-                O painel central resume o que precisa de atenção agora, sem esconder o resto do seu fluxo.
+                Tarefas, status e lembretes pessoais aparecem em um painel só, com menos ruído e mais decisão.
               </p>
             </div>
             <div className="rounded-[24px] border border-border bg-bg-elevated px-4 py-3 text-right">
-              <p className="text-xs uppercase tracking-[0.18em] text-text-muted">Ativos</p>
+              <p className="text-xs uppercase tracking-[0.18em] text-text-muted">Em aberto</p>
               <p className="mt-1 text-3xl font-semibold tracking-[-0.06em]">{priorityTasks.length}</p>
             </div>
           </div>
@@ -78,19 +84,28 @@ export function TodayOverview() {
                 >
                   <div className="flex items-start justify-between gap-3">
                     <div className="space-y-2">
-                      <div className="flex items-center gap-2">
+                      <div className="flex flex-wrap items-center gap-2">
                         <CircleCheckBig className="size-4 text-accent" />
                         <p className="font-medium">{task.title}</p>
+                        <Badge className="bg-bg-panel text-text-soft">{task.status}</Badge>
                       </div>
                       <p className="text-sm text-text-soft">{task.description ?? "Sem descrição"}</p>
+                      <div className="flex flex-wrap items-center gap-2">
+                        {task.projectId ? (
+                          <ProjectPill
+                            color={projects.find((project) => project.id === task.projectId)?.color ?? "#2563eb"}
+                            name={projects.find((project) => project.id === task.projectId)?.name ?? "Projeto"}
+                          />
+                        ) : null}
+                        <Badge className="bg-bg-elevated">{formatHours(task.estimatedMinutes ?? 0)}</Badge>
+                      </div>
                     </div>
-                    <Badge className="bg-bg-panel">{formatHours(task.estimatedMinutes ?? 0)}</Badge>
                   </div>
                 </div>
               ))
             ) : (
               <EmptyState
-                description="Adicione tarefas, eventos e lançamentos para a tela Hoje virar seu painel central."
+                description="Adicione tarefas, projetos e lembretes para a tela Hoje virar seu painel central."
                 title="Seu dia ainda está em branco"
               />
             )}
@@ -99,47 +114,45 @@ export function TodayOverview() {
 
         <div className="grid gap-4">
           <Card className="space-y-4">
-            <p className="text-sm text-text-soft">Ritmo do dia</p>
-            <div className="grid gap-3">
+            <p className="text-sm text-text-soft">Status da operação</p>
+            <div className="grid gap-3 sm:grid-cols-3 xl:grid-cols-1">
               <div className="rounded-[20px] border border-border bg-bg-elevated/70 p-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-xs uppercase tracking-[0.2em] text-text-muted">Tarefas ativas</p>
-                    <p className="mt-2 text-3xl font-semibold tracking-[-0.05em]">
-                      {filteredTasks.filter((task) => task.status !== "done").length}
-                    </p>
-                  </div>
-                  <Clock3 className="size-5 text-accent" />
-                </div>
+                <p className="text-xs uppercase tracking-[0.2em] text-text-muted">A fazer</p>
+                <p className="mt-2 text-3xl font-semibold tracking-[-0.05em]">{todoCount}</p>
               </div>
               <div className="rounded-[20px] border border-border bg-bg-elevated/70 p-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-xs uppercase tracking-[0.2em] text-text-muted">Eventos próximos</p>
-                    <p className="mt-2 text-3xl font-semibold tracking-[-0.05em]">{nextEvents.length}</p>
-                  </div>
-                  <CalendarDays className="size-5 text-accent" />
-                </div>
+                <p className="text-xs uppercase tracking-[0.2em] text-text-muted">Em andamento</p>
+                <p className="mt-2 text-3xl font-semibold tracking-[-0.05em]">{progressCount}</p>
+              </div>
+              <div className="rounded-[20px] border border-border bg-bg-elevated/70 p-4">
+                <p className="text-xs uppercase tracking-[0.2em] text-text-muted">Concluídas</p>
+                <p className="mt-2 text-3xl font-semibold tracking-[-0.05em]">{doneCount}</p>
               </div>
             </div>
           </Card>
+
           <Card>
             <div className="flex items-center justify-between">
-              <p className="text-sm text-text-soft">Próximos eventos</p>
-              <Button variant="ghost">Abrir calendário</Button>
+              <p className="text-sm text-text-soft">Lembretes pessoais</p>
+              <Link className="rounded-[14px] px-4 py-2 text-sm font-medium text-text-soft transition hover:bg-accent-soft hover:text-text" href="/events">
+                Abrir eventos
+              </Link>
             </div>
             <div className="mt-4 space-y-3">
               {nextEvents.length ? (
                 nextEvents.map((event) => (
                   <div className="rounded-[20px] border border-border bg-bg-elevated/70 px-4 py-3" key={event.id}>
-                    <p className="font-medium">{event.title}</p>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <p className="font-medium">{event.title}</p>
+                      <Badge className="bg-bg-panel text-text-soft">{formatEventRecurrence(event)}</Badge>
+                    </div>
                     <p className="mt-1 text-sm text-text-soft">{formatDateTime(event.startsAt)}</p>
                   </div>
                 ))
               ) : (
                 <EmptyState
-                  description="Os próximos eventos aparecem aqui assim que você criar os primeiros blocos."
-                  title="Sem eventos agendados"
+                  description="Crie eventos pessoais e lembretes recorrentes na nova seção Eventos."
+                  title="Sem lembretes"
                 />
               )}
             </div>
@@ -151,8 +164,8 @@ export function TodayOverview() {
               <p className="mt-1 text-3xl font-semibold tracking-[-0.05em]">{formatHours(focusMinutes)}</p>
             </div>
             <div>
-              <p className="text-sm text-text-soft">Saldo do mês</p>
-              <p className="mt-1 text-3xl font-semibold tracking-[-0.05em]">{currency(monthlyBalance)}</p>
+              <p className="text-sm text-text-soft">Eventos hoje</p>
+              <p className="mt-1 text-3xl font-semibold tracking-[-0.05em]">{nextEvents.length}</p>
             </div>
           </Card>
         </div>

@@ -60,10 +60,14 @@ export interface Database {
           task_id: string | null;
           title: string;
           description: string | null;
+          amount: number | null;
           starts_at: string;
           ends_at: string;
           location: string | null;
           is_all_day: boolean;
+          recurrence_type: "once" | "monthly" | "yearly" | null;
+          recurrence_day_of_month: number | null;
+          recurrence_month: number | null;
           created_at: string;
         };
         Insert: {
@@ -72,10 +76,14 @@ export interface Database {
           task_id?: string | null;
           title: string;
           description?: string | null;
+          amount?: number | null;
           starts_at: string;
           ends_at: string;
           location?: string | null;
           is_all_day?: boolean;
+          recurrence_type?: "once" | "monthly" | "yearly" | null;
+          recurrence_day_of_month?: number | null;
+          recurrence_month?: number | null;
           created_at?: string;
         };
         Update: Partial<Database["public"]["Tables"]["calendar_events"]["Insert"]>;

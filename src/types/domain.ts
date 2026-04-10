@@ -3,6 +3,7 @@ export type TaskStatus = "todo" | "in_progress" | "done";
 export type FinanceType = "income" | "expense";
 export type ThemeMode = "light" | "dark" | "system";
 export type CalendarView = "day" | "week" | "month" | "year";
+export type EventRecurrenceType = "once" | "monthly" | "yearly";
 
 export interface UserProfile {
   id: string;
@@ -49,10 +50,18 @@ export interface CalendarEvent {
   taskId?: string | null;
   title: string;
   description?: string | null;
+  amount?: number | null;
   startsAt: string;
   endsAt: string;
   location?: string | null;
   isAllDay: boolean;
+  recurrence?: EventRecurrenceRule | null;
+}
+
+export interface EventRecurrenceRule {
+  type: EventRecurrenceType;
+  dayOfMonth?: number | null;
+  month?: number | null;
 }
 
 export interface FocusSession {

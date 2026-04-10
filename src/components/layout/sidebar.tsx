@@ -13,7 +13,7 @@ export function Sidebar() {
   const pathname = usePathname();
 
   return (
-    <aside className="glass-panel hidden h-[calc(100vh-2rem)] w-72 shrink-0 flex-col rounded-[28px] p-5 lg:flex">
+    <aside className="glass-panel hidden h-[calc(100vh-2rem)] w-72 shrink-0 flex-col overflow-hidden rounded-[28px] p-5 lg:flex">
       <div className="mb-8 space-y-4">
         <div className="inline-flex items-center gap-2 rounded-full border border-border bg-bg-elevated px-3 py-1 text-xs font-medium text-text-soft">
           <span className="size-2 rounded-full bg-success" />
@@ -28,7 +28,7 @@ export function Sidebar() {
         </div>
       </div>
 
-      <nav className="space-y-3">
+      <nav className="scrollbar-subtle flex-1 space-y-3 overflow-y-auto pr-1">
         {primaryNavigation.map((item) => {
           if (item.href === "/projects") {
             return <ProjectsNav key={item.href} />;
@@ -55,12 +55,14 @@ export function Sidebar() {
         })}
       </nav>
 
-      <div className="mt-auto rounded-[24px] border border-border bg-[linear-gradient(180deg,rgba(255,255,255,0.34),rgba(255,255,255,0.14))] p-4 dark:bg-[linear-gradient(180deg,rgba(255,255,255,0.06),rgba(255,255,255,0.03))]">
+      <div className="mt-4 rounded-[24px] border border-border bg-[linear-gradient(180deg,rgba(255,255,255,0.3),rgba(255,255,255,0.1))] p-4 shadow-sm dark:bg-[linear-gradient(180deg,rgba(255,255,255,0.05),rgba(255,255,255,0.02))]">
         <p className="text-sm font-medium tracking-[-0.02em]">Workspace sereno</p>
-        <p className="mt-1 text-sm text-text-soft">
+        <p className="mt-1 text-sm leading-5 text-text-soft">
           Visual pensado para manter foco e preparar a futura evolução para macOS.
         </p>
-        <p className="mt-3 text-xs uppercase tracking-[0.24em] text-text-muted">v{APP_VERSION}</p>
+        <p className="mt-3 inline-flex rounded-full border border-border bg-bg-elevated px-2.5 py-1 text-xs uppercase tracking-[0.22em] text-text-muted">
+          v{APP_VERSION}
+        </p>
       </div>
     </aside>
   );
