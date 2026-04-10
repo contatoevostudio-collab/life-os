@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
+import { APP_VERSION } from "@/config/app";
 import { primaryNavigation } from "@/config/navigation";
 import { cn } from "@/lib/utils";
 
@@ -59,6 +60,7 @@ export function Sidebar() {
         <p className="mt-1 text-sm text-text-soft">
           Visual pensado para manter foco e preparar a futura evolução para macOS.
         </p>
+        <p className="mt-3 text-xs uppercase tracking-[0.24em] text-text-muted">v{APP_VERSION}</p>
       </div>
     </aside>
   );
