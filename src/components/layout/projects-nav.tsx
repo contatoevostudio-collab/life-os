@@ -1,5 +1,6 @@
 "use client";
 
+import type { Route } from "next";
 import Link from "next/link";
 import { ChevronDown, FolderKanban, Plus } from "lucide-react";
 import { usePathname } from "next/navigation";
@@ -60,7 +61,7 @@ export function ProjectsNav({ onNavigate }: ProjectsNavProps) {
           </Link>
 
           {projects.map((project) => {
-            const href = `/projects/${project.id}`;
+            const href = `/projects/${project.id}` as Route;
             const active = pathname === href;
 
             return (

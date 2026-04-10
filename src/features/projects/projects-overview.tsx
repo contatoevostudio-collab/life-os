@@ -1,5 +1,6 @@
 "use client";
 
+import type { Route } from "next";
 import Link from "next/link";
 import { useState } from "react";
 
@@ -29,6 +30,7 @@ export function ProjectsOverview() {
           {projects.map((project) => {
             const projectTasks = tasks.filter((task) => task.projectId === project.id);
             const done = projectTasks.filter((task) => task.status === "done").length;
+            const href = `/projects/${project.id}` as Route;
 
             return (
               <Card className="space-y-4" key={project.id}>
@@ -39,7 +41,7 @@ export function ProjectsOverview() {
                       {projectTasks.length} tarefas no total, {done} concluídas.
                     </p>
                   </div>
-                  <Link href={`/projects/${project.id}`}>
+                  <Link href={href}>
                     <Button>Ver kanban</Button>
                   </Link>
                 </div>
