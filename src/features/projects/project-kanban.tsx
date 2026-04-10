@@ -55,11 +55,17 @@ export function ProjectKanban({ projectId }: ProjectKanbanProps) {
     return base + Math.max(0, Math.floor((clockNow - new Date(task.startedAt).getTime()) / 1000));
   }
 
-  function label(status: TaskStatus) {
-    if (status === "todo") return "A fazer";
-    if (status === "in_progress") return "Em andamento";
-    return "Concluídas";
-  }
+function label(status: TaskStatus) {
+  if (status === "todo") return "A fazer";
+  if (status === "in_progress") return "Em andamento";
+  return "Concluídas";
+}
+
+function statusAccent(status: TaskStatus) {
+  if (status === "todo") return "bg-danger";
+  if (status === "in_progress") return "bg-warning";
+  return "bg-success";
+}
 
   return (
     <div className="space-y-6">
@@ -89,7 +95,11 @@ export function ProjectKanban({ projectId }: ProjectKanbanProps) {
         <div className="grid gap-4 xl:grid-cols-3">
           {columns.map((status) => (
             <Card
-              className={dropTarget === status ? "space-y-3 border-accent bg-accent-soft/40" : "space-y-3"}
+              className={
+                dropTarget === status
+                  ? "space-y-3 border-accent bg-accent-soft/40"
+                  : "space-y-3 bg-bg-panel/80"
+              }
               key={status}
               onDragEnter={() => setDropTarget(status)}
               onDragLeave={() => setDropTarget((current) => (current === status ? null : current))}
@@ -107,6 +117,7 @@ export function ProjectKanban({ projectId }: ProjectKanbanProps) {
                   {projectTasks.filter((task) => task.status === status).length}
                 </span>
               </div>
+              <span className={`block h-1 rounded-full ${statusAccent(status)} opacity-70`} />
 
               {projectTasks.filter((task) => task.status === status).length ? (
                 projectTasks

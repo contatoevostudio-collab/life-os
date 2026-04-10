@@ -64,7 +64,12 @@ function ProjectCard({
   const href = `/projects/${project.id}` as Route;
 
   return (
-    <Card className="space-y-4 overflow-hidden" data-context="project" data-project-id={project.id}>
+    <Card
+      className="space-y-4 overflow-hidden"
+      data-context="project"
+      data-project-id={project.id}
+      style={{ boxShadow: `0 18px 42px ${project.color}14` }}
+    >
       <div
         className="h-1.5 rounded-full"
         style={{ background: `linear-gradient(90deg, ${project.color}, transparent)` }}
@@ -86,17 +91,17 @@ function ProjectCard({
         </div>
       </div>
       <div className="grid gap-3 sm:grid-cols-3">
-        <div className="rounded-[18px] bg-bg-elevated p-4">
+        <div className="rounded-[18px] border border-border bg-bg-elevated/80 p-4">
           <p className="text-xs uppercase tracking-[0.18em] text-text-muted">A fazer</p>
           <p className="mt-2 text-2xl font-semibold">{tasks.filter((task) => task.projectId === project.id && task.status === "todo").length}</p>
         </div>
-        <div className="rounded-[18px] bg-bg-elevated p-4">
+        <div className="rounded-[18px] border border-border bg-bg-elevated/80 p-4">
           <p className="text-xs uppercase tracking-[0.18em] text-text-muted">Em andamento</p>
           <p className="mt-2 text-2xl font-semibold">
             {tasks.filter((task) => task.projectId === project.id && task.status === "in_progress").length}
           </p>
         </div>
-        <div className="rounded-[18px] bg-bg-elevated p-4">
+        <div className="rounded-[18px] border border-border bg-bg-elevated/80 p-4">
           <p className="text-xs uppercase tracking-[0.18em] text-text-muted">Concluídas</p>
           <p className="mt-2 text-2xl font-semibold">{done}</p>
         </div>

@@ -51,7 +51,7 @@ export function DashboardOverview() {
 
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         {metrics.map((metric) => (
-          <Card className="relative overflow-hidden" key={metric.label}>
+          <Card className="relative overflow-hidden border border-border bg-bg-elevated/80" key={metric.label}>
             <span className="absolute inset-x-0 top-0 h-1 bg-[linear-gradient(90deg,rgba(37,99,235,1),rgba(96,165,250,0.2))]" />
             <p className="text-sm text-text-soft">{metric.label}</p>
             <p className="mt-2 text-3xl font-semibold tracking-[-0.05em]">{metric.value}</p>

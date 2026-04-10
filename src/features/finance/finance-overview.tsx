@@ -46,7 +46,7 @@ export function FinanceOverview() {
       />
 
       <div className="grid gap-4 xl:grid-cols-[1.3fr_1fr]">
-        <Card className="grid gap-4 md:grid-cols-3">
+        <Card className="grid gap-4 rounded-[28px] border border-border bg-[linear-gradient(180deg,rgba(255,255,255,0.26),rgba(255,255,255,0.12))] p-5 md:grid-cols-3 dark:bg-[linear-gradient(180deg,rgba(255,255,255,0.04),rgba(255,255,255,0.02))]">
           <div>
             <p className="text-sm text-text-soft">Saldo</p>
             <p className="mt-1 text-3xl font-semibold tracking-[-0.05em]">{currency(income - expense)}</p>
@@ -91,7 +91,7 @@ export function FinanceOverview() {
       <div className="grid gap-3">
         {filteredTransactions.length ? (
           filteredTransactions.map((transaction) => (
-            <Card className="flex items-center justify-between gap-4" key={transaction.id}>
+            <Card className="flex items-center justify-between gap-4 bg-bg-elevated/80" key={transaction.id}>
               <div>
                 <p className="font-medium">{transaction.category}</p>
                 <p className="mt-1 text-sm text-text-soft">

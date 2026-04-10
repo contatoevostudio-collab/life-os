@@ -65,6 +65,35 @@ function monthLabel(date: Date) {
   return new Intl.DateTimeFormat("pt-BR", { month: "long", year: "numeric" }).format(date);
 }
 
+function taskTone(status: "todo" | "in_progress" | "done") {
+  if (status === "done") {
+    return {
+      bg: "bg-[#dcfce7] dark:bg-[#163625]",
+      text: "text-[#166534] dark:text-[#bbf7d0]",
+      border: "border-[#86efac] dark:border-[#23553a]"
+    };
+  }
+
+  if (status === "in_progress") {
+    return {
+      bg: "bg-[#fef3c7] dark:bg-[#3b2f13]",
+      text: "text-[#92400e] dark:text-[#fde68a]",
+      border: "border-[#fcd34d] dark:border-[#6f5620]"
+    };
+  }
+
+  return {
+    bg: "bg-[#fee2e2] dark:bg-[#3a1818]",
+    text: "text-[#b91c1c] dark:text-[#fecaca]",
+    border: "border-[#fca5a5] dark:border-[#713232]"
+  };
+}
+
+function taskToneClass(status: "todo" | "in_progress" | "done") {
+  const tone = taskTone(status);
+  return `${tone.bg} ${tone.text} ${tone.border}`;
+}
+
 export function CalendarPlanner() {
   const { events, tasks, transactions, addEvent, searchQuery, projects } = useAppState();
   const { user } = useAuth();
@@ -248,7 +277,7 @@ export function CalendarPlanner() {
                         ))}
                         {dayItems.tasks.slice(0, 2).map((task) => (
                           <div
-                            className="truncate rounded-full bg-[#dff5e7] px-2.5 py-1 text-[11px] text-[#23533a] dark:bg-[#1e3a2f] dark:text-[#d3f6df]"
+                            className={`truncate rounded-full border px-2.5 py-1 text-[11px] ${taskToneClass(task.status)}`}
                             key={task.id}
                           >
                             {task.title}
@@ -294,7 +323,7 @@ export function CalendarPlanner() {
                         </div>
                       ))}
                       {dayItems.tasks.map((task) => (
-                        <div className="rounded-[16px] bg-[#dff5e7] px-3 py-2 text-xs text-[#23533a] dark:bg-[#1e3a2f] dark:text-[#d3f6df]" key={task.id}>
+                        <div className={`rounded-[16px] border px-3 py-2 text-xs ${taskToneClass(task.status)}`} key={task.id}>
                           {task.title}
                         </div>
                       ))}
@@ -325,30 +354,42 @@ export function CalendarPlanner() {
               <div className="grid gap-4 md:grid-cols-3">
                 <Card className="space-y-3 bg-bg-elevated">
                   <p className="text-sm text-text-soft">Eventos</p>
-                  {itemsForDay(cursorDate).events.length ? itemsForDay(cursorDate).events.map((event) => (
-                    <div className="rounded-[16px] bg-bg-panel p-3" key={event.id}>
-                      <p className="font-medium">{event.title}</p>
-                      <p className="mt-1 text-sm text-text-soft">{formatDateTime(event.startsAt)}</p>
-                    </div>
-                  )) : <EmptyState description="Sem eventos neste dia." title="Agenda vazia" />}
+                  {itemsForDay(cursorDate).events.length ? (
+                    itemsForDay(cursorDate).events.map((event) => (
+                      <div className="rounded-[16px] bg-bg-panel p-3" key={event.id}>
+                        <p className="font-medium">{event.title}</p>
+                        <p className="mt-1 text-sm text-text-soft">{formatDateTime(event.startsAt)}</p>
+                      </div>
+                    ))
+                  ) : (
+                    <EmptyState description="Sem eventos neste dia." title="Agenda vazia" />
+                  )}
                 </Card>
                 <Card className="space-y-3 bg-bg-elevated">
                   <p className="text-sm text-text-soft">Tarefas</p>
-                  {itemsForDay(cursorDate).tasks.length ? itemsForDay(cursorDate).tasks.map((task) => (
-                    <div className="rounded-[16px] bg-bg-panel p-3" key={task.id}>
-                      <p className="font-medium">{task.title}</p>
-                      <p className="mt-1 text-sm text-text-soft">{task.description ?? "Sem descrição"}</p>
-                    </div>
-                  )) : <EmptyState description="Sem tarefas neste dia." title="Sem tarefas" />}
+                  {itemsForDay(cursorDate).tasks.length ? (
+                    itemsForDay(cursorDate).tasks.map((task) => (
+                      <div className={`rounded-[16px] border px-3 py-3 ${taskToneClass(task.status)}`} key={task.id}>
+                        <p className="font-medium">{task.title}</p>
+                        <p className="mt-1 text-sm text-text-soft">{task.description ?? "Sem descrição"}</p>
+                      </div>
+                    ))
+                  ) : (
+                    <EmptyState description="Sem tarefas neste dia." title="Sem tarefas" />
+                  )}
                 </Card>
                 <Card className="space-y-3 bg-bg-elevated">
                   <p className="text-sm text-text-soft">Financeiro</p>
-                  {itemsForDay(cursorDate).transactions.length ? itemsForDay(cursorDate).transactions.map((transaction) => (
-                    <div className="rounded-[16px] bg-bg-panel p-3" key={transaction.id}>
-                      <p className="font-medium">{transaction.category}</p>
-                      <p className="mt-1 text-sm text-text-soft">{currency(transaction.amount)}</p>
-                    </div>
-                  )) : <EmptyState description="Sem movimentações neste dia." title="Financeiro vazio" />}
+                  {itemsForDay(cursorDate).transactions.length ? (
+                    itemsForDay(cursorDate).transactions.map((transaction) => (
+                      <div className="rounded-[16px] bg-bg-panel p-3" key={transaction.id}>
+                        <p className="font-medium">{transaction.category}</p>
+                        <p className="mt-1 text-sm text-text-soft">{currency(transaction.amount)}</p>
+                      </div>
+                    ))
+                  ) : (
+                    <EmptyState description="Sem movimentações neste dia." title="Financeiro vazio" />
+                  )}
                 </Card>
               </div>
             </div>

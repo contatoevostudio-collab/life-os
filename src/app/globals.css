@@ -77,10 +77,10 @@ html.dark {
 body {
   min-height: 100vh;
   background:
-    radial-gradient(circle at top left, rgba(255, 255, 255, 0.9), transparent 22%),
-    radial-gradient(circle at 18% 18%, rgba(37, 99, 235, 0.08), transparent 18%),
-    radial-gradient(circle at 82% 10%, rgba(22, 163, 74, 0.06), transparent 16%),
-    radial-gradient(circle at 70% 84%, rgba(245, 158, 11, 0.05), transparent 15%),
+    radial-gradient(circle at top left, rgba(255, 255, 255, 0.055), transparent 24%),
+    radial-gradient(circle at 18% 18%, rgba(37, 99, 235, 0.04), transparent 20%),
+    radial-gradient(circle at 82% 10%, rgba(22, 163, 74, 0.025), transparent 18%),
+    radial-gradient(circle at 70% 84%, rgba(245, 158, 11, 0.02), transparent 16%),
     var(--bg);
   color: var(--text);
   font-family: var(--font-sans);
@@ -127,7 +127,7 @@ button {
   right: 4rem;
   width: 22rem;
   height: 22rem;
-  background: rgba(37, 99, 235, 0.08);
+  background: rgba(37, 99, 235, 0.028);
 }
 
 .page-shell::after {
@@ -135,7 +135,7 @@ button {
   bottom: 4rem;
   width: 18rem;
   height: 18rem;
-  background: rgba(15, 23, 42, 0.06);
+  background: rgba(15, 23, 42, 0.022);
 }
 
 .lift-card {
