@@ -3,6 +3,7 @@ export type TaskStatus = "todo" | "in_progress" | "done";
 export type FinanceType = "income" | "expense";
 export type ThemeMode = "light" | "dark" | "system";
 export type CalendarView = "day" | "week" | "month";
+export type SavedTaskView = "all" | "deep-work" | "today";
 
 export interface UserProfile {
   id: string;
@@ -31,6 +32,14 @@ export interface Task {
   scheduledEnd?: string | null;
   tags: string[];
   completedAt?: string | null;
+  subtasks?: TaskSubtask[];
+  order?: number;
+}
+
+export interface TaskSubtask {
+  id: string;
+  title: string;
+  done: boolean;
 }
 
 export interface CalendarEvent {
@@ -66,6 +75,12 @@ export interface FinancialTransaction {
   description?: string | null;
 }
 
+export interface Habit {
+  id: string;
+  title: string;
+  completedToday: boolean;
+}
+
 export interface UserPreferences {
   userId: string;
   theme: ThemeMode;
@@ -73,4 +88,11 @@ export interface UserPreferences {
   pomodoroBreakMinutes: number;
   compactMode: boolean;
   weekStartsOn: 0 | 1;
+  soundEnabled: boolean;
+  notificationsEnabled: boolean;
+  todayNote: string;
+  priorityTaskIds: string[];
+  financeCategories: string[];
+  savedTaskView: SavedTaskView;
+  habitTitles: string[];
 }

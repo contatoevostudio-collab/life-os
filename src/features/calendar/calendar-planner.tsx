@@ -14,7 +14,7 @@ import { useAuth } from "@/providers/auth-provider";
 import type { CalendarView } from "@/types/domain";
 
 export function CalendarPlanner() {
-  const { events, tasks, addEvent, updateTask, searchQuery } = useAppState();
+  const { events, tasks, addEvent, updateTask, moveEvent, resizeEvent, searchQuery } = useAppState();
   const { user } = useAuth();
   const [view, setView] = useState<CalendarView>("week");
   const [title, setTitle] = useState("");
@@ -22,6 +22,8 @@ export function CalendarPlanner() {
   const [endsAt, setEndsAt] = useState("2026-04-10T11:00");
   const [taskId, setTaskId] = useState("");
   const [draggingTaskId, setDraggingTaskId] = useState("");
+  const [draggingEventId, setDraggingEventId] = useState("");
+  const weekDays = ["Seg", "Ter", "Qua", "Qui", "Sex", "Sáb", "Dom"];
 
   const scheduledTasks = useMemo(
     () =>
@@ -65,6 +67,59 @@ export function CalendarPlanner() {
       <div className="grid gap-4 xl:grid-cols-[1.4fr_1fr]">
         <Card className="space-y-4">
           <p className="text-sm text-text-soft">Agenda {view}</p>
+          {view === "week" ? (
+            <div className="grid gap-3 xl:grid-cols-7">
+              {weekDays.map((day, dayIndex) => (
+                <div className="space-y-2" key={day}>
+                  <p className="text-sm font-medium">{day}</p>
+                  {["08:00", "12:00", "16:00"].map((slot) => (
+                    <div
+                      className="rounded-[18px] border border-dashed border-border-strong bg-bg-elevated px-3 py-4"
+                      key={`${day}-${slot}`}
+                      onDragOver={(event) => event.preventDefault()}
+                      onDrop={() => {
+                        if (draggingEventId) {
+                          const event = events.find((item) => item.id === draggingEventId);
+                          if (!event) return;
+                          const start = `2026-04-${String(14 + dayIndex).padStart(2, "0")}T${slot}:00`;
+                          const durationMs =
+                            new Date(event.endsAt).getTime() - new Date(event.startsAt).getTime();
+                          moveEvent(
+                            event.id,
+                            new Date(start).toISOString(),
+                            new Date(new Date(start).getTime() + durationMs).toISOString()
+                          );
+                          setDraggingEventId("");
+                          return;
+                        }
+
+                        const task = tasks.find((item) => item.id === draggingTaskId);
+                        if (!task) return;
+                        const start = `2026-04-${String(14 + dayIndex).padStart(2, "0")}T${slot}:00`;
+                        addEvent({
+                          userId: task.userId,
+                          title: task.title,
+                          description: task.description ?? null,
+                          startsAt: new Date(start).toISOString(),
+                          endsAt: new Date(new Date(start).getTime() + 60 * 60_000).toISOString(),
+                          taskId: task.id,
+                          location: null,
+                          isAllDay: false
+                        });
+                        updateTask(task.id, {
+                          scheduledStart: new Date(start).toISOString(),
+                          scheduledEnd: new Date(new Date(start).getTime() + 60 * 60_000).toISOString()
+                        });
+                        setDraggingTaskId("");
+                      }}
+                    >
+                      <p className="text-xs text-text-muted">{slot}</p>
+                    </div>
+                  ))}
+                </div>
+              ))}
+            </div>
+          ) : null}
           <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-1">
             {["08:00", "10:00", "12:00", "14:00", "16:00", "18:00"].map((slot) => (
               <div
@@ -108,13 +163,34 @@ export function CalendarPlanner() {
               [...filteredEvents]
                 .sort((a, b) => a.startsAt.localeCompare(b.startsAt))
                 .map((event) => (
-                  <div className="rounded-[20px] border border-border bg-bg-elevated px-4 py-4" key={event.id}>
+                  <div
+                    className="rounded-[20px] border border-border bg-bg-elevated px-4 py-4"
+                    draggable
+                    key={event.id}
+                    onDragStart={() => setDraggingEventId(event.id)}
+                  >
                     <div className="flex items-center justify-between gap-3">
                       <div>
                         <p className="font-medium">{event.title}</p>
                         <p className="mt-1 text-sm text-text-soft">{formatDateTime(event.startsAt)}</p>
                       </div>
-                      <span className="text-sm text-text-muted">{event.taskId ? "Com tarefa" : "Evento"}</span>
+                      <div className="flex items-center gap-2">
+                        <button
+                          className="rounded-[10px] bg-white/60 px-2 py-1 text-xs dark:bg-white/5"
+                          onClick={() => resizeEvent(event.id, -30)}
+                          type="button"
+                        >
+                          -30m
+                        </button>
+                        <button
+                          className="rounded-[10px] bg-white/60 px-2 py-1 text-xs dark:bg-white/5"
+                          onClick={() => resizeEvent(event.id, 30)}
+                          type="button"
+                        >
+                          +30m
+                        </button>
+                        <span className="text-sm text-text-muted">{event.taskId ? "Com tarefa" : "Evento"}</span>
+                      </div>
                     </div>
                   </div>
                 ))

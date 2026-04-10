@@ -1,5 +1,8 @@
 "use client";
 
+import Link from "next/link";
+
+import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { SectionHeading } from "@/components/ui/section-heading";
@@ -48,6 +51,41 @@ export function SettingsPanel() {
               />
             </div>
           </div>
+          <div className="grid gap-3 md:grid-cols-3">
+            <button
+              className={`rounded-[16px] px-4 py-3 text-left text-sm ${
+                preferences.compactMode ? "bg-accent text-white" : "bg-bg-elevated"
+              }`}
+              onClick={() => updatePreferences({ compactMode: !preferences.compactMode })}
+              type="button"
+            >
+              Modo compacto
+            </button>
+            <button
+              className={`rounded-[16px] px-4 py-3 text-left text-sm ${
+                preferences.soundEnabled ? "bg-accent text-white" : "bg-bg-elevated"
+              }`}
+              onClick={() => updatePreferences({ soundEnabled: !preferences.soundEnabled })}
+              type="button"
+            >
+              Som do foco
+            </button>
+            <button
+              className={`rounded-[16px] px-4 py-3 text-left text-sm ${
+                preferences.notificationsEnabled ? "bg-accent text-white" : "bg-bg-elevated"
+              }`}
+              onClick={async () => {
+                const nextValue = !preferences.notificationsEnabled;
+                if (nextValue && "Notification" in window && Notification.permission === "default") {
+                  await Notification.requestPermission();
+                }
+                updatePreferences({ notificationsEnabled: nextValue });
+              }}
+              type="button"
+            >
+              Notificações
+            </button>
+          </div>
         </Card>
 
         <Card className="space-y-3">
@@ -58,6 +96,9 @@ export function SettingsPanel() {
           <p className="text-sm text-text-soft">
             O tema e as preferências vivem como camada transversal, sem acoplar interface e storage.
           </p>
+          <Link href="/review">
+            <Button variant="secondary">Abrir revisão semanal</Button>
+          </Link>
         </Card>
       </div>
     </div>

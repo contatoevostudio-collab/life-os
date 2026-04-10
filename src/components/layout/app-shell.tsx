@@ -1,11 +1,13 @@
 "use client";
 
-import { useState, type PropsWithChildren } from "react";
+import { useEffect, useState, type PropsWithChildren } from "react";
 import Link from "next/link";
 
+import { CommandPalette } from "@/components/layout/command-palette";
 import { navigation } from "@/config/navigation";
 import { OnboardingModal } from "@/components/layout/onboarding-modal";
 import { PomodoroModal } from "@/features/focus/pomodoro-modal";
+import { useAppState } from "@/providers/app-state-provider";
 
 import { Sidebar } from "./sidebar";
 import { Topbar } from "./topbar";
@@ -13,10 +15,24 @@ import { Topbar } from "./topbar";
 export function AppShell({ children }: PropsWithChildren) {
   const [pomodoroOpen, setPomodoroOpen] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [paletteOpen, setPaletteOpen] = useState(false);
+  const { preferences } = useAppState();
+
+  useEffect(() => {
+    function onKeyDown(event: KeyboardEvent) {
+      if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "k") {
+        event.preventDefault();
+        setPaletteOpen(true);
+      }
+    }
+
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, []);
 
   return (
     <>
-      <div className="min-h-screen p-4">
+      <div className={`min-h-screen p-4 ${preferences.compactMode ? "text-[14px]" : ""}`}>
         <div className="mx-auto flex max-w-[1680px] gap-4">
           <Sidebar />
 
@@ -49,6 +65,11 @@ export function AppShell({ children }: PropsWithChildren) {
       </div>
 
       <PomodoroModal onClose={() => setPomodoroOpen(false)} open={pomodoroOpen} />
+      <CommandPalette
+        onClose={() => setPaletteOpen(false)}
+        onOpenPomodoro={() => setPomodoroOpen(true)}
+        open={paletteOpen}
+      />
       <OnboardingModal />
     </>
   );
